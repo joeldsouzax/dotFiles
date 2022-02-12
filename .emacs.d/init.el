@@ -18,6 +18,18 @@
 
 
 ;; --------------------------
+;; FULL-SCREEN CONFIG
+;; --------------------------
+
+(add-to-list 'default-frame-alist '(fullscreen . maximized))                      ;; default window of emacs would be fullscreen
+
+;; --------------------------
+;; YES-NO  CONFIG
+;; --------------------------
+
+(fset 'yes-or-no-p 'y-or-n-p)
+
+;; --------------------------
 ;; MAC KEY REMAPPING CONFIG
 ;; --------------------------
 
@@ -35,6 +47,7 @@
 		eshell-mode-hook))
   (add-hook mode(lambda () (display-line-numbers-mode 0))))                         ;; disable line numbers for some modes.
 
+(setq-default highlight-tabs 1)                                                     ;; highlight tabs 
 
 ;; --------------------------
 ;; FONT CONFIG
@@ -46,7 +59,7 @@
 ;; TEMPORARY THEME CONFIG
 ;; --------------------------
 
-(load-theme 'tango-dark)                                                            ;; loaded basic built in theme
+(load-theme 'manoj-dark)                                                            ;; loaded basic built in theme
 
 ;; --------------------------
 ;; PACKAGE CONFIG
@@ -59,6 +72,7 @@
 (package-initialize)
 (unless package-archive-contents
   (package-refresh-contents))
+
 
 (unless (package-installed-p 'use-package)
   (package-install 'use-package))                                                   ;; Initialize use-package on non linux platforms.
@@ -145,6 +159,11 @@
   :custom
   (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
 
+;; --------------------------
+;; ORG-MODE CONFIG
+;; --------------------------
+
+(use-package org)
 
 
 ;; --------------------------
@@ -158,15 +177,3 @@
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
    '(magit counsel-projectile projectile which-key rainbow-delimiters ivy use-package)))
-(custom-set-facesc
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
