@@ -51,6 +51,13 @@
 
 
 ;; --------------------------
+;; COUNSEL & SWIPER CONFIG
+;; --------------------------
+
+(use-package counsel)
+(use-package swiper)
+
+;; --------------------------
 ;; IVY  CONFIG
 ;; --------------------------
 
@@ -69,9 +76,20 @@
 	 :map ivy-reverse-i-search-map
 	 ("C-k" . ivy-previous-line)
 	 ("C-d" . ivy-reverse-i-search-kill))
-  :config
+  :init
   (ivy-mode 1))
 
+
+;; --------------------------
+;; PACKAGE CONFIG
+;; --------------------------
+
+
+
+
+;; --------------------------
+;; AUTO CONFIG
+;; --------------------------
 
 
 (custom-set-variables
