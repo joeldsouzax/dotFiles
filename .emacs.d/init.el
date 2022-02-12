@@ -12,9 +12,22 @@
 (scroll-bar-mode -1)             ;; disable visible scrollbar
 (tool-bar-mode -1)               ;; disable the toolbar
 (tooltip-mode -1)                ;; disable the tooltips
-(set-fringe-mode 10)             ;; give some breathing room :D
+(set-fringe-mode 8)              ;; give some breathing room :D
 (menu-bar-mode -1)               ;; disable the menu bar
 (setq visible-bell 1)            ;; set up bthe visible alert bell
+
+
+;; --------------------------
+;; LINE CONFIG
+;; --------------------------
+
+(column-number-mode)
+(global-display-line-numbers-mode t)                                                ;; line numbers enabled.
+(dolist (mode '(org-mode-hook
+		term-mode-hook
+		eshell-mode-hook))
+  (add-hook mode(lambda () (display-line-numbers-mode 0))))                         ;; disable line numbers for some modes.
+
 
 
 ;; --------------------------
