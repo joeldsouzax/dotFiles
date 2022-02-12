@@ -25,9 +25,9 @@
 (global-display-line-numbers-mode t)                                                ;; line numbers enabled.
 (dolist (mode '(org-mode-hook
 		term-mode-hook
+		shell-mode-hook
 		eshell-mode-hook))
   (add-hook mode(lambda () (display-line-numbers-mode 0))))                         ;; disable line numbers for some modes.
-
 
 
 ;; --------------------------
@@ -41,8 +41,6 @@
 ;; --------------------------
 
 (load-theme 'tango-dark)                                                            ;; loaded basic built in theme
-
-
 
 ;; --------------------------
 ;; PACKAGE CONFIG
@@ -94,6 +92,14 @@
 
 
 ;; --------------------------
+;; RAINBOW-DELIMITERS CONFIG
+;; --------------------------
+
+(use-package rainbow-delimiters
+  :hook (prog-mode . rainbow-delimiters-mode))                                      ;; rainbow delimiters only on programming modes.
+
+
+;; --------------------------
 ;; PACKAGE CONFIG
 ;; --------------------------
 
@@ -104,13 +110,12 @@
 ;; AUTO CONFIG
 ;; --------------------------
 
-
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(package-selected-packages '(ivy use-package)))
+ '(package-selected-packages '(rainbow-delimiters ivy use-package)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
