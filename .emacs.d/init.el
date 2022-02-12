@@ -18,6 +18,12 @@
 
 
 ;; --------------------------
+;; MAC KEY REMAPPING CONFIG
+;; --------------------------
+
+(setq mac-command-modifier 'meta)                                                  ;; changing meta in mac to command key
+
+;; --------------------------
 ;; LINE CONFIG
 ;; --------------------------
 
@@ -62,10 +68,9 @@
 
 
 ;; --------------------------
-;; COUNSEL & SWIPER CONFIG
+;; SWIPER CONFIG
 ;; --------------------------
 
-(use-package counsel)
 (use-package swiper)
 
 ;; --------------------------
@@ -98,17 +103,46 @@
 (use-package rainbow-delimiters
   :hook (prog-mode . rainbow-delimiters-mode))                                      ;; rainbow delimiters only on programming modes.
 
-
 ;; --------------------------
 ;; WHICH KEY CONFIG
 ;; --------------------------
-
 
 (use-package which-key
   :init (which-key-mode)
   :diminish which-key-mode
   :config
   (setq which-key-idle-delay 0.3))
+
+
+;; --------------------------
+;; PROJECTILE CONFIG
+;; --------------------------
+;; for working on projects related to programming
+
+(use-package projectile
+  :diminish projectile-mode
+  :config (projectile-mode)
+  :custom ((projectile-completion-system 'ivy))
+  :bind-keymap
+  ("C-c p" . projectile-command-map)
+  :init
+  (when (file-directory-p "~/dev/src/github.com")
+    (setq projectile-project-search-path '("~/dev/src/github.com")))
+  (setq projectile-switch-project-action #'projectile-dired))
+
+
+;; --------------------------
+;; COUNSEL-PROJECTILE CONFIG
+;; --------------------------
+
+(use-package counsel-projectile
+  :config (counsel-projectile-mode))
+
+
+
+
+
+
 
 ;; --------------------------
 ;; AUTO CONFIG
@@ -119,7 +153,14 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(package-selected-packages '(which-key rainbow-delimiters ivy use-package)))
+ '(package-selected-packages
+   '(counsel-projectile projectile which-key rainbow-delimiters ivy use-package)))
+(custom-set-facesc
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
