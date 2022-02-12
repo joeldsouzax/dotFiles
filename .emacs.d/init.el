@@ -16,3 +16,19 @@
 (menu-bar-mode -1)               ;; disable the menu bar
 (setq visible-bell 1)            ;; set up bthe visible alert bell
 
+
+;; --------------------------
+;; FONT CONFIG
+;; --------------------------
+
+(set-face-attribute 'default nil :font "Menlo" :height 150)                         ;; set font type and size
+
+;; --------------------------
+;; TEMPORARY THEME CONFIG
+;; --------------------------
+
+(load-theme 'tango-dark)                                                            ;; loaded basic built in theme
+
+
+
+
