@@ -175,20 +175,20 @@
 ;; ORG-MODE CONFIG
 ;; --------------------------
 
-(defun jd/org-mode-setup ()
-  (variable-pitch-mode 1)
-  (auto-fill-mode 0)
-  (visual-line-mode 1))
-;;  (org-indent-mode)
-;;  (variable-pitch-mode 1)
-;;  (auto-fill-mode 0)
-;;  (visual-line-mode 1))
-
-
 (use-package org
   :config
   (setq org-ellipsis "  ▼"
-	org-hide-emphasis-markers 1))
+	org-hide-emphasis-markers t))
+
+;; org bullets package to style the org heading, sub heading etc
+
+
+(use-package org-bullets
+  :after org
+  :hook (org-mode . org-bullets-mode)
+  :custom
+  (org-bullets-bullet-list '("🚀" "💃" "☄" "✏" "🕺" "💻" "💣" "🏹" "🗡" "🛡")))
+
 
 
 ;; --------------------------
@@ -201,7 +201,7 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
-   '(emojify magit counsel-projectile projectile which-key rainbow-delimiters ivy use-package)))
+   '(org-bullets emojify magit counsel-projectile projectile which-key rainbow-delimiters ivy use-package)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
