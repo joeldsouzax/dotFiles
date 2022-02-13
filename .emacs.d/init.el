@@ -179,7 +179,16 @@
 (defun jd/org-mode-setup ()
   (org-indent-mode)
   (auto-fill-mode 0)
-  (visual-line-mode 1))
+  (visual-line-mode 1)
+  (setq prettify-symbols-unprettify-at-point 'right-edge)
+  (push '("[ ]" . "🔳") prettify-symbols-alist)
+  (push '("[X]" . "☑") prettify-symbols-alist)
+  (push '("[-]" . "◾") prettify-symbols-alist)
+  (push '("#+BEGIN_SRC" . "λ") prettify-symbols-alist)
+  (push '("#+END_SRC" . "λ") prettify-symbols-alist)
+  (prettify-symbols-mode))
+
+
 
 
 (use-package org
@@ -200,22 +209,23 @@
 ;; change font sizes according to the level of type
 ;; figure out the best one and change it later TODO:
 
-(dolist (face '((org-level-1 . 1.50)
-		(org-level-2 . 1.21)
-		(org-level-3 . 1.05)
-		(org-level-4 . 1.0)
-		(org-level-5 . 1.1)
-		(org-level-6 . 1.1)
-		(org-level-7 . 1.1)
-		(org-level-8 . 1.1)))
-  (set-face-attribute (car face) nil :font "Menlo" :weight 'regular :height (cdr face)))
+
+(with-eval-after-load 'org-faces (dolist (face '((org-level-1 . 1.2)
+						 (org-level-2 . 1.1)
+						 (org-level-3 . 1.05)
+						 (org-level-4 . 1.0)
+						 (org-level-5 . 1.1)
+						 (org-level-6 . 1.1)
+						 (org-level-7 . 1.1)
+						 (org-level-8 . 1.1)))
+				   (set-face-attribute (car face) nil :font "Menlo" :weight 'regular :height (cdr face))))
 
 
 ;; replace hyphen - with some thing better
 
 (font-lock-add-keywords 'org-mode
 			'(("^ *\\([-]\\) "
-			   (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "▷"))))))
+			   (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "➥"))))))
 
 
 
