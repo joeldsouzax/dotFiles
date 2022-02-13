@@ -175,7 +175,15 @@
 ;; ORG-MODE CONFIG
 ;; --------------------------
 
+
+(defun jd/org-mode-setup ()
+  (org-indent-mode)
+  (auto-fill-mode 0)
+  (visual-line-mode 1))
+
+
 (use-package org
+  :hook (org-mode . jd/org-mode-setup)
   :config
   (setq org-ellipsis "  ▼"
 	org-hide-emphasis-markers t))
@@ -190,6 +198,7 @@
   (org-bullets-bullet-list '("🚀" "💃" "☄" "✏" "🕺" "💻" "💣" "🏹" "🗡" "🛡")))
 
 ;; change font sizes according to the level of type
+;; figure out the best one and change it later TODO:
 
 (dolist (face '((org-level-1 . 1.50)
 		(org-level-2 . 1.21)
@@ -209,9 +218,24 @@
 			   (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "▷"))))))
 
 
+
 ;; --------------------------
-;; AUTO CONFIG
+;; VISUAL FILL ORG  CONFIG
 ;; --------------------------
+
+(defun jd/org-mode-visual-fill ()
+  (setq visual-fill-column-width 100
+	visual-fill-column-center-text t)
+  (visual-fill-column-mode 1))
+
+(use-package visual-fill-column
+  :defer t
+  :hook (org-mode . jd/org-mode-visual-fill))
+
+
+;; ------------------------------------------------------------------------------;;
+;; AUTO CONFIG + AUTO GENERATED                                                  ;;
+;; ------------------------------------------------------------------------------;;
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
@@ -219,7 +243,7 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
-   '(org-bullets emojify magit counsel-projectile projectile which-key rainbow-delimiters ivy use-package)))
+   '(visual-fill-column visual-fill visual-fill-mode org-bullets emojify magit counsel-projectile projectile which-key rainbow-delimiters ivy use-package)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
