@@ -167,7 +167,6 @@
 ;; --------------------------
 ;; EMOJIFY CONFIG
 ;; --------------------------
-(add-hook 'after-init-hook #'global-emojify-mode)                                   ;; enable emojis globally :D
 
 (use-package emojify
   :init
@@ -230,7 +229,7 @@
 	'(("archive.org" :maxlevel . 1)
 	  ("tasks.org" :maxlevel . 1)))
   ;;save org buffers after refiling
-  (adivice-add 'org-refile :after 'org-save-all-org-buffers)
+  (advice-add 'org-refile :after 'org-save-all-org-buffers)
   ;; custom agenda views
   (setq org-agenda-custom-commands
 	'(("d" "Dashboard"
@@ -273,7 +272,26 @@
 		   (org-agenda-files org-agenda-files)))
 	    (todo "CANCEL"
 		  ((org-agenda-overriding-header "Cancelled Projects")
-		   (org-agenda-files org-agenda-fiels))))))))
+		   (org-agenda-files org-agenda-fiels)))))))
+  (setq org-capture-templates
+	`(("t" "Tasks / Projects")
+	  ("tt" "Task" entry (file+olp "~/dev/src/github.com/organize/tasks.org" "Backlog")
+	   "* TODO %?\n %U\n %a\n %i" :empty-lines 1)
+	  ("j" "Journal Entries")
+	  ("jj" "Journal" entry
+	   (file+olp+datetree "~/dev/src/github.com/organize/journal.org")
+	   "\n* %<%I:%M %p> - Journal :journal:\n\n%?\n\n"
+	   :clock-in :clock-resume
+	   :empty-lines 1)
+	  ("jm" "Meeting" entry
+	   (file+olp+datetree "~/dev/src/github.com/organize/journal.org")
+	   "* %<%I:%M %p> - %a :meetings:\n\n%?\n\n"
+	   :clock-in :clock-resume
+	   :empty-lines 1)
+	  ("w" "Workflows")
+	  ("we" "Checking Email" entry (file+olp+datetree "~/dev/src/github.com/organize/journal.org")
+	   "* Checking Email :email:\n\n%?" :clock-in :clock-resume :empty-lines 1))))
+  
 	    
 
 ;; org bullets package to style the org heading, sub heading etc
