@@ -150,7 +150,10 @@
 ;; --------------------------
 
 (use-package counsel-projectile
-  :config (counsel-projectile-mode))
+  :after projectile
+  :bind (("C-M-p" . counsel-projectile-find-file))
+  :config
+  (counsel-projectile-mode))
 
 ;; --------------------------
 ;; MAGIT CONFIG
