@@ -201,8 +201,12 @@
   (setq org-agenda-start-with-log-mode t)
   (setq org-log-done 'time)
   (setq org-log-into-drawer t)
+  (require 'org-habit)
+  (add-to-list 'org-modules 'org-habit)
+  (setq org-habit-graph-column 60)
   (setq org-agenda-files
-	'("~/dev/src/github.com/organize/tasks.org"))
+	'("~/dev/src/github.com/organize/tasks.org")
+	'("~/dev/src/github.com/organize/habits.org"))
   (setq org-ellipsis "  ▼"
 	org-hide-emphasis-markers t)
   (setq org-todo-keywords
