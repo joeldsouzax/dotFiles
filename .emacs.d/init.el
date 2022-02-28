@@ -4,6 +4,29 @@
 ;; use emacs org configuration
 
 
+
+;; --------------------------
+;; VARIABLE DECLARATION
+;; --------------------------
+
+(defvar jd/default-font-size 130)
+(defvar jd/default-variable-font-size 160)
+
+
+;; --------------------------
+;; FONT Definitions
+;; --------------------------
+
+
+(set-face-attribute 'default nil :font "Menlo" :height jd/default-font-size)
+
+;;fixed pitch face
+(set-face-attribute 'fixed-pitch nil :font "Menlo" :height jd/default-font-size)
+
+;; set the variable-pitch-face
+(set-face-attribute 'variable-pitch nil :font "Cantarell" :height jd/default-variable-font-size :weight 'regular)
+
+
 ;; --------------------------
 ;; BASIC CONFIG
 ;; --------------------------
@@ -53,8 +76,6 @@
 ;; --------------------------
 ;; FONT CONFIG
 ;; --------------------------
-
-(set-face-attribute 'default nil :font "Menlo" :height 150)                         ;; set font type and size
 
 ;; --------------------------
 ;; TEMPORARY THEME CONFIG
@@ -181,6 +202,7 @@
 (defun jd/org-mode-setup ()
   (org-indent-mode)
   (auto-fill-mode 0)
+  (variable-pitch-mode 1)
   (visual-line-mode 1)
   (setq prettify-symbols-unprettify-at-point 'right-edge)
   (push '("[ ]" . "🔳") prettify-symbols-alist)
@@ -190,6 +212,7 @@
   (push '("#+END_SRC" . "λ") prettify-symbols-alist)
   (push '("#+begin_src" . "λ") prettify-symbols-alist)
   (push '("#+end_src" . "λ") prettify-symbols-alist)
+  (push '("#(ref:" . "(") prettify-symbols-alist)
   (prettify-symbols-mode))
 
 
@@ -204,9 +227,12 @@
   (require 'org-habit)
   (add-to-list 'org-modules 'org-habit)
   (setq org-habit-graph-column 60)
+
+  ;; config for agenda files
   (setq org-agenda-files
-	'("~/dev/src/github.com/organize/tasks.org")
-	'("~/dev/src/github.com/organize/habits.org"))
+	'("~/dev/src/github.com/organize/tasks.org"
+	  "~/dev/src/github.com/organize/habits.org"))
+  
   (setq org-ellipsis "  ▼"
 	org-hide-emphasis-markers t)
   (setq org-todo-keywords
@@ -322,21 +348,38 @@
 				   (set-face-attribute 'org-block-begin-line nil
 						       :background "#141414"
 						       :weight 'bold
-						       :height 180
 						       :foreground "#d30cb8"
 						       :slant 'italic
 						       :extend t)
 				   (set-face-attribute 'org-block-end-line nil
 						       :background "#141414"
 						       :foreground "#d30cb8"
-						       :height 180
 						       :weight 'bold
 						       :slant 'italic
 						       :extend t)
 				   (set-face-attribute 'org-block nil
 						       :background "#050505"
+						       :inherit 'fixed-pitch
 						       :extend t)
-				   (set-face-attribute (car face) nil :font "Menlo" :weight 'regular :height (cdr face))))
+				   (set-face-attribute 'org-code nil
+						       :inherit '(shadow fixed-pitch))
+				   (set-face-attribute 'org-special-keyword nil
+						       :inherit '(font-lock-commenbt-face fixed-pitch))
+				   (set-face-attribute 'org-table nil
+						       :inherit '(shadow fixed-pitch))
+				   (set-face-attribute 'org-formula nil
+						       :inherit 'fixed-pitch)
+				   (set-face-attribute 'org-verbatim nil
+						       :inherit '(shadow fixed-pitch))
+				   (set-face-attribute 'org-meta-line nil
+						       :inherit '(font-lock-comment-face fixed-pitch))
+				   (set-face-attribute 'org-checkbox nil
+						       :inherit 'fixed-pitch)
+				   (set-face-attribute 'line-number nil
+						       :inherit 'fixed-pitch)
+				   (set-face-attribute 'line-number-current-line nil
+						       :inherit 'fixed-pitch)
+				   (set-face-attribute (car face) nil :font "Cantarell" :weight 'regular :height (cdr face))))
 
 
 ;; replace hyphen - with some thing better
@@ -344,7 +387,6 @@
 (font-lock-add-keywords 'org-mode
 			'(("^ *\\([-]\\) "
 			   (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "➥"))))))
-
 
 
 
@@ -363,6 +405,79 @@
   :hook (org-mode . jd/org-mode-visual-fill))
 
 
+;; --------------------------
+;; ORG-BABEL CONFIG
+;; --------------------------
+
+(with-eval-after-load 'org
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((emacs-lisp . t)
+     (js . t)
+     (css . t)))
+  (push '("conf-unix" . conf-unix) org-src-lang-modes))
+
+
+;; --------------------------
+;; ORG CODE TEMPLATE  CONFIG
+;; --------------------------
+
+
+(with-eval-after-load 'org
+  (require 'org-tempo)
+  (add-to-list 'org-structure-template-alist '("sh" . "src shell"))
+  (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
+  (add-to-list 'org-structure-template-alist '("css" . "src css"))
+  (add-to-list 'org-structure-template-alist '("js" . "src js")))
+
+
+;; --------------------------
+;; ORG AUTO TANGLE CONFIG
+;; --------------------------
+;; Automatically tangle emacs.org config file when we save it.
+
+(defun jd/org-babel-tangle-config ()
+  (when (string-equal (file-name-directory (buffer-file-name))
+		      (expand-file-name user-emacs-directory))
+    ;; dynamic scoping to the rescue
+    (let ((org-confirm-babel-evaluate nil))
+      (org-babel-tangle))))
+
+(add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'jd/org-babel-tangle-config)))
+
+
+;; --------------------------
+;; LSP MODE  CONFIG
+;; --------------------------
+
+
+(use-package lsp-mode
+  :commands (lsp lsp-deferred)
+  :init
+  (setq lsp-keymap-prefix "C-c l")
+  :config
+  (lsp-enable-which-key-integration t))
+
+
+;; typescript language server
+
+(use-package typescript-mode
+  :mode "\\.ts\\'"
+  :hook (typescript-mode . lsp-deferred)
+  :config
+  (setq typescript-indent-level 2))
+
+
+;; --------------------------
+;; SHELL ENVIRONENT CONFIG
+;; --------------------------
+
+(use-package exec-path-from-shell
+  :ensure t
+  :config
+  (exec-path-from-shell-initialize))
+
+
 ;; ------------------------------------------------------------------------------;;
 ;; AUTO CONFIG + AUTO GENERATED                                                  ;;
 ;; ------------------------------------------------------------------------------;;
@@ -375,7 +490,7 @@
  '(org-ellipsis "  ▼")
  '(org-hide-emphasis-markers t)
  '(package-selected-packages
-   '(visual-fill-column visual-fill visual-fill-mode org-bullets emojify magit counsel-projectile projectile which-key rainbow-delimiters ivy use-package)))
+   '(exec-path-from-shell ts-ls typescript-mode lsp-mode visual-fill-column visual-fill visual-fill-mode org-bullets emojify magit counsel-projectile projectile which-key rainbow-delimiters ivy use-package)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
