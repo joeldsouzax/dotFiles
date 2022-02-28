@@ -81,7 +81,9 @@
 ;; TEMPORARY THEME CONFIG
 ;; --------------------------
 
-(load-theme 'manoj-dark)                                                            ;; loaded basic built in theme
+(use-package monokai-theme
+  :config
+  (load-theme 'monokai t))
 
 ;; --------------------------
 ;; PACKAGE CONFIG
@@ -450,11 +452,20 @@
 ;; LSP MODE  CONFIG
 ;; --------------------------
 
+;; lsp header breadcrumb
+
+(defun jd/lsp-mode-setup ()
+  (setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbols))
+  (lsp-headerline-breadcrumb-mode))
+
 
 (use-package lsp-mode
   :commands (lsp lsp-deferred)
+  :hook (lsp-mode . jd/lsp-mode-setup)
   :init
   (setq lsp-keymap-prefix "C-c l")
+  (setq lsp-log-io nil)
+  (setq lsp-restart 'auto-restart)
   :config
   (lsp-enable-which-key-integration t))
 
@@ -466,6 +477,42 @@
   :hook (typescript-mode . lsp-deferred)
   :config
   (setq typescript-indent-level 2))
+
+
+;; --------------------------
+;; COMPANY MODE CONFIG
+;; --------------------------
+
+(use-package company
+  :after lsp-mode
+  :hook (lsp-mode . company-mode)
+  :bind (:map company-active-map
+	      ("<tab>" . company-complete-selection))
+  (:map lsp-mode-map
+	("<tab>" . company-indent-or-complete-common))
+  :custom
+  (company-minimum-prefix-length 1)
+  (company-idle-delay 0.0))
+
+
+(require 'color)
+
+(let ((bg (face-attribute 'default :background)))
+  (custom-set-faces
+   `(company-tooltip ((t (:inherit default :background , (color-lighten-name bg 2)))))
+   `(company-scrollbar-bg ((t (:background ,(color-lighten-name bg 10)))))
+   `(company-scrollbar-fg ((t (:background ,(color-lighten-name bg 5)))))
+   `(company-tooltip-selection ((t (:inherit font-lock-function-name-face))))
+   `(company-tooltip-common ((t (:inherit front-lock-constant-face))))))
+
+
+;; --------------------------
+;; COMPANY BOX CONFIG
+;; --------------------------
+
+
+(use-package company-box
+  :hook (company-mode . company-box-mode))
 
 
 ;; --------------------------
@@ -487,13 +534,22 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(custom-safe-themes
+   '("b77a00d5be78f21e46c80ce450e5821bdc4368abf4ffe2b77c5a66de1b648f10" default))
  '(org-ellipsis "  ▼")
  '(org-hide-emphasis-markers t)
  '(package-selected-packages
-   '(exec-path-from-shell ts-ls typescript-mode lsp-mode visual-fill-column visual-fill visual-fill-mode org-bullets emojify magit counsel-projectile projectile which-key rainbow-delimiters ivy use-package)))
+   '(monokai-theme zenburn-theme exec-path-from-shell ts-ls typescript-mode lsp-mode visual-fill-column visual-fill visual-fill-mode org-bullets emojify magit counsel-projectile projectile which-key rainbow-delimiters ivy use-package)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(company-scrollbar-bg ((t (:background "#199919991999"))) t)
+ '(company-scrollbar-fg ((t (:background "#0ccc0ccc0ccc"))) t)
+ '(company-tooltip ((t (:inherit default :background "#051e051e051e"))))
+ '(company-tooltip-common ((t (:inherit front-lock-constant-face))))
+ '(company-tooltip-scrollbar-thumb ((t (:background "#0ccc0ccc0ccc"))))
+ '(company-tooltip-scrollbar-track ((t (:background "#199919991999"))))
+ '(company-tooltip-selection ((t (:inherit font-lock-function-name-face))))
  '(org-ellipsis ((t (:foreground "DeepPink3" :underline nil)))))
