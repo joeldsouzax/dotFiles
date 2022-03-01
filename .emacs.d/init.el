@@ -33,20 +33,119 @@
 
 
 (setq inhibit-startup-message t) ;; remove the default emacs startup message
-(scroll-bar-mode -1)             ;; disable visible scrollbar
+(scroll-bar-mode -1)             ;; disablE visible scrollbar
 (tool-bar-mode -1)               ;; disable the toolbar
 (tooltip-mode -1)                ;; disable the tooltips
 (set-fringe-mode 10)             ;; give some breathing room :D
 (menu-bar-mode -1)               ;; disable the menu bar
 (setq visible-bell 1)            ;; set up bthe visible alert bell
+(global-hl-line-mode +1)
+(save-place-mode t)
+
+
+
+
+;; --------------------------
+;; BACKUP CONFIG
+;; --------------------------
+
+
+(setq backup-directory-alist '(("." . "~/.emacs.d/backup"))
+    backup-by-copying t    ; Don't delink hardlinks
+    version-control t      ; Use version numbers on backups
+    delete-old-versions t  ; Automatically delete excess backups
+    kept-new-versions 20   ; how many of the newest versions to keep
+    kept-old-versions 5    ; and how many of the old
+    )
+
+;; --------------------------
+;; PACKAGE CONFIG
+;; --------------------------
+
+(require 'package)
+(setq package-archives '(("melpa" . "https://melpa.org/packages/")
+			 ("org" . "https://orgmode.org/elpa/")
+			 ("elpa" . "https://elpa.gnu.org/packages/")))
+(package-initialize)
+(unless package-archive-contents
+  (package-refresh-contents))
+
+
+(unless (package-installed-p 'use-package)
+  (package-install 'use-package))                                                   ;; Initialize use-package on non linux platforms.
+
+(require 'use-package)
+(setq use-package-always-ensure t)
+
+
+
+
+;; --------------------------
+;; BENCHMARK STARTUP CONFIG
+;; --------------------------
+
+(defun jd/display-startup-time ()
+  (message "⏱ Emacs loaded in %s with %d garbage collections."
+	   (format "%.2f seconds"
+		   (float-time
+		    (time-subtract after-init-time before-init-time)))
+	   gcs-done))
+
+(add-hook 'emacs-startup-hook #'jd/display-startup-time)
+
+;; --------------------------
+;; GARBAGE COLLECTION CONFIG
+;; --------------------------
+
+(setq gc-cons-threshold 10000000)
+
+;; restore after startup
+
+(add-hook 'after-init-hook
+	  (lambda ()
+	    (setq gc-cons-threshold 10000000)
+	    (message "gc-cons-threshold restored to %S"
+		     gc-cons-threshold)))
+
+
+
+
+
+;; --------------------------
+;; BEACON MODE CONFIG
+;; ----------------------
+
+(use-package beacon
+  :ensure t
+  :config
+  (beacon-mode 1)
+  (setq beacon-color "#f222ff"))
+
+;; --------------------------
+;; ALL-ICONS CONFIG
+;; ----------------------
+
+
+(use-package all-the-icons)
 
 
 ;; --------------------------
 ;; MODELINE CONFIG
 ;; ----------------------
 
+(use-package doom-modeline
+  :ensure t
+  :init
+  (doom-modeline-mode 1))
+
+(setq doom-modeline-height 25)
+(setq doom-modeine-bar-width 3)
+(setq doom-modeline-lsp t)
+(setq doom-modeline-project-detection 'project)
 
 
+(use-package powerline
+  :ensure t)
 
 ;; --------------------------
 ;; FULL-SCREEN CONFIG
@@ -57,6 +156,7 @@
 ;; --------------------------
 ;; YES-NO  CONFIG
 ;; --------------------------
+
 
 (fset 'yes-or-no-p 'y-or-n-p)
 
@@ -91,26 +191,6 @@
   (setq zenburn-override-colors-alist
 	'(("zenburn-bg" . "#000000")))
   (load-theme 'zenburn t))
-
-;; --------------------------
-;; PACKAGE CONFIG
-;; --------------------------
-
-(require 'package)
-(setq package-archives '(("melpa" . "https://melpa.org/packages/")
-			 ("org" . "https://orgmode.org/elpa/")
-			 ("elpa" . "https://elpa.gnu.org/packages/")))
-(package-initialize)
-(unless package-archive-contents
-  (package-refresh-contents))
-
-
-(unless (package-installed-p 'use-package)
-  (package-install 'use-package))                                                   ;; Initialize use-package on non linux platforms.
-
-(require 'use-package)
-(setq use-package-always-ensure t)
-
 
 ;; --------------------------
 ;; SWIPER CONFIG
@@ -401,8 +481,30 @@
 
 
 ;; --------------------------
+;; ORG ROAM CONFIG
+;; --------------------------
+
+(use-package org-roam
+  :after org
+  :init (setq org-roam-v2-ack t)
+  :custom
+  (org-roam-directory (file-truename "~/dev/src/github.com/notes"))
+  :config
+  (org-roam-setup)
+  :bind (("C-c n f" . org-roam-node-find)
+	 ("C-c n r" . org-roam-node-random)
+	 (:map org-mode-map
+	       (("C-c n i" . org-roam-node-insert)
+                ("C-c n o" . org-id-get-create)
+                ("C-c n t" . org-roam-tag-add)
+                ("C-c n a" . org-roam-alias-add)
+                ("C-c n l" . org-roam-buffer-toggle)))))
+	   
+
+;; --------------------------
 ;; VISUAL FILL ORG  CONFIG
 ;; --------------------------
+
 
 (defun jd/org-mode-visual-fill ()
   (setq visual-fill-column-width 100
@@ -486,108 +588,12 @@
 ;; lsp tree mode
 
 (use-package lsp-treemacs
-  :ensure t
-  :defer t
-  :init
-  (with-eval-after-load 'winum
-    (define-key winum-keymap (kbd "M-0") #'treemacs-select-window))
-  :config
-  (progn
-    (setq treemacs-collapse-dirs                   (if treemacs-python-executable 3 0)
-          treemacs-deferred-git-apply-delay        0.5
-          treemacs-directory-name-transformer      #'identity
-          treemacs-display-in-side-window          t
-          treemacs-eldoc-display                   'simple
-          treemacs-file-event-delay                5000
-          treemacs-file-extension-regex            treemacs-last-period-regex-value
-          treemacs-file-follow-delay               0.2
-          treemacs-file-name-transformer           #'identity
-          treemacs-follow-after-init               t
-          treemacs-expand-after-init               t
-          treemacs-find-workspace-method           'find-for-file-or-pick-first
-          treemacs-git-command-pipe                ""
-          treemacs-goto-tag-strategy               'refetch-index
-          treemacs-indentation                     2
-          treemacs-indentation-string              " "
-          treemacs-is-never-other-window           nil
-          treemacs-max-git-entries                 5000
-          treemacs-missing-project-action          'ask
-          treemacs-move-forward-on-expand          nil
-          treemacs-no-png-images                   nil
-          treemacs-no-delete-other-windows         t
-          treemacs-project-follow-cleanup          nil
-	  treemacs-persist-file                    (expand-file-name ".cache/treemacs-persist" user-emacs-directory)
-          treemacs-position                        'left
-          treemacs-read-string-input               'from-child-frame
-          treemacs-recenter-distance               0.1
-          treemacs-recenter-after-file-follow      nil
-          treemacs-recenter-after-tag-follow       nil
-          treemacs-recenter-after-project-jump     'always
-          treemacs-recenter-after-project-expand   'on-distance
-          treemacs-litter-directories              '("/node_modules" "/.venv" "/.cask")
-          treemacs-show-cursor                     nil
-          treemacs-show-hidden-files               t
-          treemacs-silent-filewatch                nil
-          treemacs-silent-refresh                  nil
-          treemacs-sorting                         'alphabetic-asc
-          treemacs-select-when-already-in-treemacs 'move-back
-          treemacs-space-between-root-nodes        t
-          treemacs-tag-follow-cleanup              t
-          treemacs-tag-follow-delay                1.5
-          treemacs-text-scale                      nil
-          treemacs-user-mode-line-format           nil
-          treemacs-user-header-line-format         nil
-          treemacs-wide-toggle-width               70
-          treemacs-width                           35
-          treemacs-width-increment                 1
-          treemacs-width-is-initially-locked       t
-          treemacs-workspace-switch-cleanup        nil)
-
-
-    ;; The default width and height of the icons is 22 pixels. If you are
-    ;; using a Hi-DPI display, uncomment this to double the icon size.
-    ;;(treemacs-resize-icons 44)
-
-    (treemacs-follow-mode t)
-    (treemacs-filewatch-mode t)
-    (treemacs-fringe-indicator-mode 'always)
-
-    (pcase (cons (not (null (executable-find "git")))
-                 (not (null treemacs-python-executable)))
-      (`(t . t)
-       (treemacs-git-mode 'deferred))
-      (`(t . _)
-       (treemacs-git-mode 'simple)))
-
-    (treemacs-hide-gitignored-files-mode nil))
-  :bind
-  (:map global-map
-        ("M-0"       . treemacs-select-window)
-        ("C-x t 1"   . treemacs-delete-other-windows)
-        ("C-x t t"   . treemacs)
-        ("C-x t d"   . treemacs-select-directory)
-        ("C-x t B"   . treemacs-bookmark)
-        ("C-x t C-t" . treemacs-find-file)
-        ("C-x t M-t" . treemacs-find-tag)))
-
-
-(use-package treemacs-projectile
-  :after (treemacs projectile)
-  :ensure t)
-
-(use-package treemacs-icons-dired
-  :hook (dired-mode . treemacs-icons-dired-enable-once)
-  :ensure t)
-
-(use-package treemacs-magit
-  :after (treemacs magit)
-  :ensure t)
+  :after lsp)
 
 
 ;; lsp ivy
 
 (use-package lsp-ivy)
-
 
 ;; typescript language server
 
@@ -599,7 +605,59 @@
 
 
 
+;; tide setup for typescript
 
+(use-package tide
+  :ensure t
+  :after (typescript-mode company flycheck)
+  :hook ((typescript-mode . tide-setup)
+	 (typscript-mode . tide-hl-identifier-mode)
+	 (before-save . tide-format-before-save)))
+
+
+
+;; --------------------------
+;; PROGRAMMING CONFIG
+;; --------------------------
+
+
+(use-package smartparens
+  :config
+  (add-hook 'prog-mode-hook 'smartparens-mode))
+
+
+(use-package rainbow-mode
+  :config
+  (setq rainbow-x-colors nil)
+  (add-hook 'prog-mode-hook 'rainbow-mode))
+
+
+(add-hook 'prog-mode-hook 'electric-pair-mode)
+
+
+
+;; --------------------------
+;; PRETTIER CONFIG
+;; --------------------------
+
+(use-package prettier-js
+  :config
+  (add-hook 'typescript-mode 'prettier-js-mode))
+
+
+;; load prettier after typescript
+
+(eval-after-load 'typescript-mode
+    '(progn
+       (add-hook 'typescript-mode #'add-node-modules-path)
+       (add-hook 'typscript-mode #'prettier-js-mode)))
+
+;; --------------------------
+;; LOCAL NODE-MODULES CONFIG
+;; --------------------------
+
+
+(use-package add-node-modules-path)
 
 ;; --------------------------
 ;; COMPANY MODE CONFIG
@@ -647,6 +705,16 @@
   (exec-path-from-shell-initialize))
 
 
+;; --------------------------
+;; DIRED CONFIG
+;; --------------------------
+(use-package dired-single)
+
+
+(use-package all-the-icons-dired
+  :hook (dired-mode . all-the-icons-dired-mode))
+
+
 ;; ------------------------------------------------------------------------------;;
 ;; AUTO CONFIG + AUTO GENERATED                                                  ;;
 ;; ------------------------------------------------------------------------------;;
@@ -661,7 +729,8 @@
  '(org-ellipsis "  ▼")
  '(org-hide-emphasis-markers t)
  '(package-selected-packages
-   '(treemacs-magit treemacs-icons-dired treemacs-projectile lsp-ivy lsp-treemacs doom-modeline cyberpunk-theme color-theme-sanityinc-tomorrow ir-black-theme gruber-darker-theme seti-theme seti monokai-theme zenburn-theme exec-path-from-shell ts-ls typescript-mode lsp-mode visual-fill-column visual-fill visual-fill-mode org-bullets emojify magit counsel-projectile projectile which-key rainbow-delimiters ivy use-package)))
+   '(org-roam prettier-js add-node-modules-path rainbow-mode smartparens dap-chrome dap-chrome-setup benchmark-init tide beacon powerline all-the-icons-dired treemacs-magit treemacs-icons-dired treemacs-projectile lsp-ivy lsp-treemacs doom-modeline cyberpunk-theme color-theme-sanityinc-tomorrow ir-black-theme gruber-darker-theme seti-theme seti monokai-theme zenburn-theme exec-path-from-shell ts-ls typescript-mode lsp-mode visual-fill-column visual-fill visual-fill-mode org-bullets emojify magit counsel-projectile projectile which-key rainbow-delimiters ivy use-package))
+ '(treemacs-project-follow-mode t))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -675,3 +744,4 @@
  '(company-tooltip-scrollbar-track ((t (:background "#199919991999"))))
  '(company-tooltip-selection ((t (:inherit font-lock-function-name-face))))
  '(org-ellipsis ((t (:foreground "DeepPink3" :underline nil)))))
+(put 'upcase-region 'disabled nil)
