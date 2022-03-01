@@ -5,6 +5,11 @@
 (defvar jd/default-font-size 130)
 (defvar jd/default-variable-font-size 160)
 
+;; --------------------------
+;; NO LITTERING
+;; --------------------------
+
+(use-package no-littering)
 
 ;; --------------------------
 ;; FONT Definitions
@@ -34,8 +39,6 @@
 (setq visible-bell 1)            ;; set up bthe visible alert bell
 (global-hl-line-mode +1)
 (save-place-mode t)
-
-
 
 
 ;; --------------------------
@@ -69,6 +72,7 @@
 
 (require 'use-package)
 (setq use-package-always-ensure t)
+(setq use-package-verbose t)
 
 
 
@@ -101,14 +105,12 @@
 		     gc-cons-threshold)))
 
 
-
-
-
 ;; --------------------------
 ;; BEACON MODE CONFIG
 ;; ----------------------
 
 (use-package beacon
+  :defer 2
   :ensure t
   :config
   (beacon-mode 1)
@@ -118,9 +120,7 @@
 ;; ALL-ICONS CONFIG
 ;; ----------------------
 
-
 (use-package all-the-icons)
-
 
 ;; --------------------------
 ;; MODELINE CONFIG
@@ -135,10 +135,6 @@
 (setq doom-modeine-bar-width 3)
 (setq doom-modeline-lsp t)
 (setq doom-modeline-project-detection 'project)
-
-
-(use-package powerline
-  :ensure t)
 
 ;; --------------------------
 ;; FULL-SCREEN CONFIG
@@ -210,9 +206,22 @@
 	 :map ivy-reverse-i-search-map
 	 ("C-k" . ivy-previous-line)
 	 ("C-d" . ivy-reverse-i-search-kill))
-  :init
+  :config
   (ivy-mode 1))
 
+
+;; --------------------------
+;; COUNSEL  CONFIG
+;; --------------------------
+
+(use-package counsel
+  :bind (("C-M-j" . 'counsel-switch-buffer)
+	 :map minibuffer-local-map
+	 ("C-r" . 'counsel-minibuffer-history))
+  :custom
+  (counsel-linux-app-format-function #'counsel-linux-app-format-function-name-only)
+  :config
+  (counsel-mode 1))
 
 ;; --------------------------
 ;; RAINBOW-DELIMITERS CONFIG
@@ -226,10 +235,11 @@
 ;; --------------------------
 
 (use-package which-key
-  :init (which-key-mode)
+  :defer 0.1
   :diminish which-key-mode
   :config
-  (setq which-key-idle-delay 0.3))
+  (which-key-mode)
+  (setq which-key-idle-delay 1))
 
 
 ;; --------------------------
@@ -272,7 +282,8 @@
 ;; --------------------------
 
 (use-package emojify
-  :init
+  :defer 2
+  :config
   (global-emojify-mode))
 
 
@@ -410,7 +421,6 @@
 
 
 (use-package org-bullets
-  :after org
   :hook (org-mode . org-bullets-mode)
   :custom
   (org-bullets-bullet-list '("🚀" "☄" "🌝" "☀" "💻" "💣" "🏹" "🗡" "🛡")))
@@ -577,7 +587,6 @@
   :hook(lsp-mode . lsp-ui-mode))
 
 
-
 ;; lsp tree mode
 
 (use-package lsp-treemacs
@@ -586,7 +595,8 @@
 
 ;; lsp ivy
 
-(use-package lsp-ivy)
+(use-package lsp-ivy
+  :after lsp)
 
 ;; typescript language server
 
@@ -604,28 +614,45 @@
   :ensure t
   :after (typescript-mode company flycheck)
   :hook ((typescript-mode . tide-setup)
-	 (typscript-mode . tide-hl-identifier-mode)
-	 (before-save . tide-format-before-save)))
-
+	 (typscript-mode . tide-hl-identifier-mode)))
 
 
 ;; --------------------------
 ;; PROGRAMMING CONFIG
 ;; --------------------------
 
-
 (use-package smartparens
+  :diminish smartparens-mode ;; Do not show in modeline
+  :init
+  (require 'smartparens-config)
   :config
-  (add-hook 'prog-mode-hook 'smartparens-mode))
+  (smartparens-global-mode t) ;; These options can be t or nil.
+  (show-smartparens-global-mode t)
+  (setq sp-show-pair-from-inside t)
+  :custom-face
+  (sp-show-pair-match-face ((t (:foreground "White")))) ;; Could also have :background "Grey" for example.
+  )
+
 
 
 (use-package rainbow-mode
+  :after prog-mode
   :config
-  (setq rainbow-x-colors nil)
-  (add-hook 'prog-mode-hook 'rainbow-mode))
+  (setq rainbow-x-colors nil))
 
 
-(add-hook 'prog-mode-hook 'electric-pair-mode)
+(add-hook 'prog-mode 'electric-pair-mode)
+
+
+
+;; --------------------------
+;; LOCAL NODE-MODULES CONFIG
+;; --------------------------
+
+
+(use-package add-node-modules-path
+  :defer t
+  :hook (((typescript-mode js2-mode web-mode) . add-node-modules-path)))
 
 
 
@@ -633,27 +660,32 @@
 ;; PRETTIER CONFIG
 ;; --------------------------
 
+(defun jd/use-prettier-if-config-exists-in-project-root ()
+  (let* ((package-root (locate-dominating-file
+                        (or (buffer-file-name) default-directory)
+                        "package.json"))
+         (package-file (and package-root (expand-file-name "package.json" package-root)))
+         (grep-prettierrc (concat "grep prettier" package-file))
+         ;; ↓ this needs to be fixed
+         (prettierrc-embedded (not (string= "" (shell-command-to-string grep-prettierrc))))
+         ;; ↑ this needs to be fixed
+         (prettierrc (and package-root (file-exists-p (expand-file-name ".prettierrc" package-root))))
+         (prettierrc-json (and package-root (file-exists-p (expand-file-name ".prettierrc.json" package-root))))
+         (prettierrc-js (and package-root (file-exists-p (expand-file-name ".prettierrc.js" package-root))))
+         (prettierrc-config-js (and package-root (file-exists-p (expand-file-name ".prettierrc.config.js" package-root))))
+         (prettier-config-p (not (eq nil (or prettierrc-embedded prettierrc prettierrc-json prettierrc-js prettierrc-config-js)))))
+    (when prettier-config-p (prettier-js-mode))))
+
+
+
 (use-package prettier-js
-  :config
-  (add-hook 'typescript-mode 'prettier-js-mode))
+  :defer t
+  :diminish prettier-js-mode
+  :hook (((typescript-mode js2-mode web-mode) . jd/use-prettier-if-config-exists-in-project-root)))
 
-
-;; load prettier after typescript
-
-(eval-after-load 'typescript-mode
-    '(progn
-       (add-hook 'typescript-mode #'add-node-modules-path)
-       (add-hook 'typscript-mode #'prettier-js-mode)))
 
 ;; --------------------------
-;; LOCAL NODE-MODULES CONFIG
-;; --------------------------
-
-
-(use-package add-node-modules-path)
-
-;; --------------------------
-;; COMPANY MODE CONFIG
+;; Company MODE CONFIG
 ;; --------------------------
 
 (use-package company
@@ -701,11 +733,15 @@
 ;; --------------------------
 ;; DIRED CONFIG
 ;; --------------------------
+
 (use-package dired-single)
 
 
 (use-package all-the-icons-dired
   :hook (dired-mode . all-the-icons-dired-mode))
+
+
+
 
 
 ;; ------------------------------------------------------------------------------;;
@@ -722,7 +758,7 @@
  '(org-ellipsis "  ▼")
  '(org-hide-emphasis-markers t)
  '(package-selected-packages
-   '(org-roam prettier-js add-node-modules-path rainbow-mode smartparens dap-chrome dap-chrome-setup benchmark-init tide beacon powerline all-the-icons-dired treemacs-magit treemacs-icons-dired treemacs-projectile lsp-ivy lsp-treemacs doom-modeline cyberpunk-theme color-theme-sanityinc-tomorrow ir-black-theme gruber-darker-theme seti-theme seti monokai-theme zenburn-theme exec-path-from-shell ts-ls typescript-mode lsp-mode visual-fill-column visual-fill visual-fill-mode org-bullets emojify magit counsel-projectile projectile which-key rainbow-delimiters ivy use-package))
+   '(no-littering org-roam prettier-js add-node-modules-path rainbow-mode smartparens dap-chrome dap-chrome-setup benchmark-init tide beacon powerline all-the-icons-dired treemacs-magit treemacs-icons-dired treemacs-projectile lsp-ivy lsp-treemacs doom-modeline cyberpunk-theme color-theme-sanityinc-tomorrow ir-black-theme gruber-darker-theme seti-theme seti monokai-theme zenburn-theme exec-path-from-shell ts-ls typescript-mode lsp-mode visual-fill-column visual-fill visual-fill-mode org-bullets emojify magit counsel-projectile projectile which-key rainbow-delimiters ivy use-package))
  '(treemacs-project-follow-mode t))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
