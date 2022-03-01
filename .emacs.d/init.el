@@ -45,7 +45,6 @@
 ;; BACKUP CONFIG
 ;; --------------------------
 
-
 (setq backup-directory-alist '(("." . "~/.emacs.d/backup"))
     backup-by-copying t    ; Don't delink hardlinks
     version-control t      ; Use version numbers on backups
@@ -273,6 +272,7 @@
 ;; --------------------------
 
 (use-package magit
+  :commands magit-status
   :custom
   (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1))
 
@@ -644,7 +644,6 @@
 (add-hook 'prog-mode 'electric-pair-mode)
 
 
-
 ;; --------------------------
 ;; LOCAL NODE-MODULES CONFIG
 ;; --------------------------
@@ -653,7 +652,6 @@
 (use-package add-node-modules-path
   :defer t
   :hook (((typescript-mode js2-mode web-mode) . add-node-modules-path)))
-
 
 
 ;; --------------------------
@@ -675,7 +673,6 @@
          (prettierrc-config-js (and package-root (file-exists-p (expand-file-name ".prettierrc.config.js" package-root))))
          (prettier-config-p (not (eq nil (or prettierrc-embedded prettierrc prettierrc-json prettierrc-js prettierrc-config-js)))))
     (when prettier-config-p (prettier-js-mode))))
-
 
 
 (use-package prettier-js
@@ -734,14 +731,26 @@
 ;; DIRED CONFIG
 ;; --------------------------
 
-(use-package dired-single)
+(use-package dired
+  :ensure nil
+  :commands (dired dired-jump)
+  :bind (("C-x C-j" . dired-jump))
+  :custom ((dired-listing-switches "-agho --group-directories-first")))
+
+
+(use-package dired-single
+  :commands (dired dired-jump))
 
 
 (use-package all-the-icons-dired
   :hook (dired-mode . all-the-icons-dired-mode))
 
 
-
+(use-package dired-open
+  :commands (dired dired-jump)  
+  :config
+  (setq dired-open-extension '(("png" . "feh")
+			       ("mkv" . "mpv"))))
 
 
 ;; ------------------------------------------------------------------------------;;
@@ -772,5 +781,6 @@
  '(company-tooltip-scrollbar-thumb ((t (:background "#0ccc0ccc0ccc"))))
  '(company-tooltip-scrollbar-track ((t (:background "#199919991999"))))
  '(company-tooltip-selection ((t (:inherit font-lock-function-name-face))))
- '(org-ellipsis ((t (:foreground "DeepPink3" :underline nil)))))
+ '(org-ellipsis ((t (:foreground "DeepPink3" :underline nil))))
+ '(sp-show-pair-match-face ((t (:foreground "White")))))
 (put 'upcase-region 'disabled nil)
