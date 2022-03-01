@@ -1,10 +1,3 @@
-
-;; test configuration
-;; will need to change this later on.
-;; use emacs org configuration
-
-
-
 ;; --------------------------
 ;; VARIABLE DECLARATION
 ;; --------------------------
@@ -183,7 +176,7 @@
 
 
 ;; --------------------------
-;; TEMPORARY THEME CONFIG
+;; THEME CONFIG
 ;; --------------------------
 
 (use-package zenburn-theme
