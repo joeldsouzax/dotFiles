@@ -304,6 +304,8 @@
   (push '("#+BEGIN_SRC" . "λ") prettify-symbols-alist)
   (push '("#+END_SRC" . "λ") prettify-symbols-alist)
   (push '("#+begin_src" . "λ") prettify-symbols-alist)
+  (push '("#+RESULTS:" . "▼▼") prettify-symbols-alist)
+  (push '("#+results:" . "▼▼") prettify-symbols-alist)
   (push '("#+end_src" . "λ") prettify-symbols-alist)
   (push '("#(ref:" . "(") prettify-symbols-alist)
   (prettify-symbols-mode))
@@ -315,6 +317,7 @@
   :hook (org-mode . jd/org-mode-setup)
   :config
   (setq org-agenda-start-with-log-mode t)
+  (setq org-startup-with-inline-images t)
   (setq org-log-done 'time)
   (setq org-log-into-drawer t)
   (require 'org-habit)
@@ -482,6 +485,26 @@
 
 
 
+(defface org-bold
+  '((t :foreground "#d2268b"
+       :background "#2e2e2e"
+       :weight bold
+       ))
+  "Face for org-mode bold."
+  :group 'org-faces )
+
+(setq org-emphasis-alist
+  '(("*" ;; (bold :foreground "Orange" )
+     org-bold)
+    ("/" (italic :foreground "#9B00E8"))
+    ("_" underline)
+    ("=" ;; (:background "maroon" :foreground "white")
+     org-verbatim verbatim)
+    ("~" ;;(:background "deep sky blue" :foreground "MidnightBlue")
+     org-code verbatim)
+    ("+" (:strike-through t))))
+
+
 
 ;; --------------------------
 ;; ORG ROAM CONFIG
@@ -523,13 +546,30 @@
 ;; ORG-BABEL CONFIG
 ;; --------------------------
 
+
+;; setting up ditaa
+(setq org-ditaa-jar-path "~/.emacs.d/ditaa0_9.jar")
+
+
+(defun jd/display-inline-images ()
+  (condition-case nil
+      (org-display-inline-images)
+    (error nil)))
+
 (with-eval-after-load 'org
   (org-babel-do-load-languages
    'org-babel-load-languages
    '((emacs-lisp . t)
+     (ditaa . t)
      (js . t)
+     (org . t)
      (css . t)))
-  (push '("conf-unix" . conf-unix) org-src-lang-modes))
+  (push '("conf-unix" . conf-unix) org-src-lang-modes)
+  (add-hook 'org-babel-after-execute-hook 'jd/display-inline-images 'append)
+  (setq org-babel-results-keyword "results")
+  (setq org-confirm-babel-evaluate nil))
+
+
 
 
 ;; --------------------------
@@ -735,7 +775,8 @@
   :ensure nil
   :commands (dired dired-jump)
   :bind (("C-x C-j" . dired-jump))
-  :custom ((dired-listing-switches "-agho --group-directories-first")))
+  :custom ((dired-listing-switches "-agho --group-directories-first")
+	   (insert-directory-program "gls" dired-use-ls-dired t)))
 
 
 (use-package dired-single
