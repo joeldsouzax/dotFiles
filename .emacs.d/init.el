@@ -317,6 +317,7 @@
   :hook (org-mode . jd/org-mode-setup)
   :config
   (setq org-agenda-start-with-log-mode t)
+  (setq org-format-latex-options (plist-put org-format-latex-options :scale 2.0))
   (setq org-startup-with-inline-images t)
   (setq org-log-done 'time)
   (setq org-log-into-drawer t)
@@ -506,6 +507,20 @@
 
 
 
+
+;; --------------------------
+;; ORG LATEX CONFIG
+;; --------------------------
+
+(use-package auctex
+  :after org-mode
+  :config
+  (setq TeX-auto-save t)
+  (setq TeX-parse-self t)
+  (setq-default TeX-master nil))
+
+
+
 ;; --------------------------
 ;; ORG ROAM CONFIG
 ;; --------------------------
@@ -551,6 +566,12 @@
 (setq org-ditaa-jar-path "~/.emacs.d/ditaa0_9.jar")
 
 
+;; org babel typescript
+
+(use-package ob-typescript
+  :after org)
+
+
 (defun jd/display-inline-images ()
   (condition-case nil
       (org-display-inline-images)
@@ -562,12 +583,14 @@
    '((emacs-lisp . t)
      (ditaa . t)
      (js . t)
+     (C . t)
+     (C++ . t)
+     (typescript . t)
      (org . t)
      (css . t)))
   (push '("conf-unix" . conf-unix) org-src-lang-modes)
   (add-hook 'org-babel-after-execute-hook 'jd/display-inline-images 'append)
-  (setq org-babel-results-keyword "results")
-  (setq org-confirm-babel-evaluate nil))
+  (setq org-babel-results-keyword "results"))
 
 
 
@@ -581,9 +604,10 @@
   (require 'org-tempo)
   (add-to-list 'org-structure-template-alist '("sh" . "src shell"))
   (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
+  (add-to-list 'org-structure-template-alist '("cpp" . "src C++"))
   (add-to-list 'org-structure-template-alist '("css" . "src css"))
-  (add-to-list 'org-structure-template-alist '("js" . "src js")))
-
+  (add-to-list 'org-structure-template-alist '("ts" . "src typescript"))
+  (add-to-list 'org-structure-template-alit '("js" . "src js")))
 
 ;; --------------------------
 ;; ORG AUTO TANGLE CONFIG
@@ -808,7 +832,7 @@
  '(org-ellipsis "  ▼")
  '(org-hide-emphasis-markers t)
  '(package-selected-packages
-   '(no-littering org-roam prettier-js add-node-modules-path rainbow-mode smartparens dap-chrome dap-chrome-setup benchmark-init tide beacon powerline all-the-icons-dired treemacs-magit treemacs-icons-dired treemacs-projectile lsp-ivy lsp-treemacs doom-modeline cyberpunk-theme color-theme-sanityinc-tomorrow ir-black-theme gruber-darker-theme seti-theme seti monokai-theme zenburn-theme exec-path-from-shell ts-ls typescript-mode lsp-mode visual-fill-column visual-fill visual-fill-mode org-bullets emojify magit counsel-projectile projectile which-key rainbow-delimiters ivy use-package))
+   '(auctex ob-typescript no-littering org-roam prettier-js add-node-modules-path rainbow-mode smartparens dap-chrome dap-chrome-setup benchmark-init tide beacon powerline all-the-icons-dired treemacs-magit treemacs-icons-dired treemacs-projectile lsp-ivy lsp-treemacs doom-modeline cyberpunk-theme color-theme-sanityinc-tomorrow ir-black-theme gruber-darker-theme seti-theme seti monokai-theme zenburn-theme exec-path-from-shell ts-ls typescript-mode lsp-mode visual-fill-column visual-fill visual-fill-mode org-bullets emojify magit counsel-projectile projectile which-key rainbow-delimiters ivy use-package))
  '(treemacs-project-follow-mode t))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
