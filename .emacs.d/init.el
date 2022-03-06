@@ -41,6 +41,19 @@
 (save-place-mode t)
 
 
+;; trying to disable the flickering
+
+(add-to-list 'default-frame-alist '(inhibit-double-buffering . t))
+
+
+;; i like to start my emacs with a view of my todos, org-agenda
+
+(defun emacs-startup-screen ()
+  "Display the weekly org-agenda and all todos."
+  (org-agenda nil "d"))
+(add-hook 'emacs-startup-hook #'emacs-startup-screen)
+
+
 ;; --------------------------
 ;; BACKUP CONFIG
 ;; --------------------------
@@ -540,7 +553,23 @@
                 ("C-c n t" . org-roam-tag-add)
                 ("C-c n a" . org-roam-alias-add)
                 ("C-c n l" . org-roam-buffer-toggle)))))
-	   
+
+
+
+
+;; org roam ui
+
+(use-package org-roam-ui
+    :after org-roam ;; or :after org
+;;         normally we'd recommend hooking orui after org-roam, but since org-roam does not have
+;;         a hookable mode anymore, you're advised to pick something yourself
+;;         if you don't care about startup time, use
+;;  :hook (after-init . org-roam-ui-mode)
+    :config
+    (setq org-roam-ui-sync-theme t
+          org-roam-ui-follow t
+          org-roam-ui-update-on-save t
+          org-roam-ui-open-on-start t))
 
 ;; --------------------------
 ;; VISUAL FILL ORG  CONFIG
@@ -584,12 +613,14 @@
      (ditaa . t)
      (js . t)
      (C . t)
-     (C++ . t)
      (typescript . t)
      (org . t)
      (css . t)))
   (push '("conf-unix" . conf-unix) org-src-lang-modes)
   (add-hook 'org-babel-after-execute-hook 'jd/display-inline-images 'append)
+  (setq org-edit-src-content-indentation 0
+	org-src-tab-acts-natively t
+	org-src-preserve-indentation t)
   (setq org-babel-results-keyword "results"))
 
 
@@ -607,7 +638,7 @@
   (add-to-list 'org-structure-template-alist '("cpp" . "src C++"))
   (add-to-list 'org-structure-template-alist '("css" . "src css"))
   (add-to-list 'org-structure-template-alist '("ts" . "src typescript"))
-  (add-to-list 'org-structure-template-alit '("js" . "src js")))
+  (add-to-list 'org-structure-template-alist '("js" . "src js")))
 
 ;; --------------------------
 ;; ORG AUTO TANGLE CONFIG
