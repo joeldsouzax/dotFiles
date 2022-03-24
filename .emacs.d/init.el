@@ -5,6 +5,35 @@
 (defvar jd/default-font-size 130)
 (defvar jd/default-variable-font-size 160)
 
+
+;; --------------------------
+;; USER DECLARATION
+;; --------------------------
+
+(setq user-full-name "Joel D'Souza")
+(setq user-mail-address "joeldsouzax@gmail.com")
+
+
+
+;; --------------------------
+;; LOAD EMACS CONFIG FOLDER SCRIPTS
+;; --------------------------
+
+(defun load-directory (directory)
+  "Load recursively all `.el' files in DIRECTORY"
+  (dolist (element (directory-files-and-attributes directory nil nil nil))
+    (let* ((path (car element))
+	   (fullpath (concat directory "/" path))
+	   (isdir (car (cdr element)))
+	   (ignore-dir (or (string= path ".") (string= path ".."))))
+      (cond
+       ((and (eq isdir t) (not ignore-dir))
+	(load-directory fullpath))
+       ((and (eq isdir nil) (string= (substring path -3) ".el"))
+	(load (file-name-sans-extension fullpath)))))))
+
+(load-directory "~/.emacs.d/config")
+
 ;; --------------------------
 ;; NO LITTERING
 ;; --------------------------
@@ -39,7 +68,7 @@
 (setq visible-bell 1)            ;; set up bthe visible alert bell
 (global-hl-line-mode +1)
 (save-place-mode t)
-
+(global-auto-revert-mode t)
 
 ;; trying to disable the flickering
 
@@ -266,8 +295,8 @@
   :bind-keymap
   ("C-c p" . projectile-command-map)
   :init
-  (when (file-directory-p "~/dev/src/github.com")
-    (setq projectile-project-search-path '("~/dev/src/github.com")))
+  (when (file-directory-p "~/dev/code")
+    (setq projectile-project-search-path '("~/dev/code")))
   (setq projectile-switch-project-action #'projectile-dired))
 
 ;; --------------------------
@@ -319,6 +348,10 @@
   (push '("#+begin_src" . "λ") prettify-symbols-alist)
   (push '("#+RESULTS:" . "▼▼") prettify-symbols-alist)
   (push '("#+results:" . "▼▼") prettify-symbols-alist)
+  (push '("#+BEGIN_QUOTE" . "\"") prettify-symbols-alist)
+  (push '("#+END_QUOTE" . "\"") prettify-symbols-alist)
+  (push '("#+begin_quote" . "\"") prettify-symbols-alist)
+  (push '("#+end_quote" . "\"") prettify-symbols-alist)
   (push '("#+end_src" . "λ") prettify-symbols-alist)
   (push '("#(ref:" . "(") prettify-symbols-alist)
   (prettify-symbols-mode))
@@ -677,40 +710,56 @@
   (lsp-enable-which-key-integration t))
 
 ;; lsp ui config
-
 (use-package lsp-ui
   :hook(lsp-mode . lsp-ui-mode))
 
-
 ;; lsp tree mode
-
 (use-package lsp-treemacs
   :after lsp)
 
-
 ;; lsp ivy
-
 (use-package lsp-ivy
   :after lsp)
 
-;; typescript language server
+
+;; --------------------------
+;; TYPESCRIPT CONFIG
+;; --------------------------
 
 (use-package typescript-mode
-  :mode "\\.ts\\'"
+  :mode "\\.\\(ts\\|js\\)\\'"
+  :init
+  (define-derived-mode typescript-tsx-mode typescript-mode "tsx")
   :hook (typescript-mode . lsp-deferred)
   :config
-  (setq typescript-indent-level 2))
+  (setq typescript-indent-level 2)
+  (add-hook 'typescript-mode #'subword-mode)
+  (add-to-list 'auto-mode-alist '("\\.tsx?\\'" . typescript-tsx-mode)))
 
-
-
-;; tide setup for typescript
-
-(use-package tide
+(use-package tree-sitter
   :ensure t
-  :after (typescript-mode company flycheck)
-  :hook ((typescript-mode . tide-setup)
-	 (typscript-mode . tide-hl-identifier-mode)))
+  :hook ((typescript-mode . tree-sitter-hl-mode)
+	 (typescript-tsx-mode . tree-sitter-hl-mode)))
 
+(use-package tree-sitter-langs
+  :ensure t
+  :after tree-sitter
+  :config
+  (tree-sitter-require 'tsx)
+  (add-to-list 'tree-sitter-major-mode-language-alist '(typescript-tsx-mode . tsx)))
+
+
+;; --------------------------
+;; HASKELL CONFIG
+;; --------------------------
+
+(use-package lsp-haskell)
+
+(require 'lsp)
+(require 'lsp-haskell)
+;; Hooks so haskell and literate haskell major modes trigger LSP setup
+(add-hook 'haskell-mode-hook #'lsp)
+(add-hook 'haskell-literate-mode-hook #'lsp)
 
 ;; --------------------------
 ;; PROGRAMMING CONFIG
@@ -725,8 +774,7 @@
   (show-smartparens-global-mode t)
   (setq sp-show-pair-from-inside t)
   :custom-face
-  (sp-show-pair-match-face ((t (:foreground "White")))) ;; Could also have :background "Grey" for example.
-  )
+  (sp-show-pair-match-face ((t (:foreground "White"))))) ;; Could also have :background "Grey" for example.
 
 
 
@@ -746,7 +794,7 @@
 
 (use-package add-node-modules-path
   :defer t
-  :hook (((typescript-mode js2-mode web-mode) . add-node-modules-path)))
+  :hook (((typescript-mode json-mode js2-mode web-mode) . add-node-modules-path)))
 
 
 ;; --------------------------
@@ -773,7 +821,7 @@
 (use-package prettier-js
   :defer t
   :diminish prettier-js-mode
-  :hook (((typescript-mode js2-mode web-mode) . jd/use-prettier-if-config-exists-in-project-root)))
+  :hook (((typescript-mode json-mode ) . jd/use-prettier-if-config-exists-in-project-root)))
 
 
 ;; --------------------------
@@ -809,7 +857,12 @@
 
 
 (use-package company-box
-  :hook (company-mode . company-box-mode))
+  :after company
+  :ensure t
+  :hook (company-mode . company-box-mode)
+  :config
+  (setq company-box-show-single-candidate t)
+  (setq x-gtk-resize-child-frame 'hide))
 
 
 ;; --------------------------
@@ -849,6 +902,15 @@
 			       ("mkv" . "mpv"))))
 
 
+;; --------------------------
+;; YARN.el CONFIG
+;; --------------------------
+
+(global-set-key (kbd "C-c y i") 'yarn-init)
+(global-set-key (kbd "C-c y a") 'yarn-add)
+(global-set-key (kbd "C-c y d") 'yarn-add-dev)
+
+
 ;; ------------------------------------------------------------------------------;;
 ;; AUTO CONFIG + AUTO GENERATED                                                  ;;
 ;; ------------------------------------------------------------------------------;;
@@ -863,7 +925,7 @@
  '(org-ellipsis "  ▼")
  '(org-hide-emphasis-markers t)
  '(package-selected-packages
-   '(auctex ob-typescript no-littering org-roam prettier-js add-node-modules-path rainbow-mode smartparens dap-chrome dap-chrome-setup benchmark-init tide beacon powerline all-the-icons-dired treemacs-magit treemacs-icons-dired treemacs-projectile lsp-ivy lsp-treemacs doom-modeline cyberpunk-theme color-theme-sanityinc-tomorrow ir-black-theme gruber-darker-theme seti-theme seti monokai-theme zenburn-theme exec-path-from-shell ts-ls typescript-mode lsp-mode visual-fill-column visual-fill visual-fill-mode org-bullets emojify magit counsel-projectile projectile which-key rainbow-delimiters ivy use-package))
+   '(haskell-mode auctex ob-typescript no-littering org-roam prettier-js add-node-modules-path rainbow-mode smartparens dap-chrome dap-chrome-setup benchmark-init tide beacon powerline all-the-icons-dired treemacs-magit treemacs-icons-dired treemacs-projectile lsp-ivy lsp-treemacs doom-modeline cyberpunk-theme color-theme-sanityinc-tomorrow ir-black-theme gruber-darker-theme seti-theme seti monokai-theme zenburn-theme exec-path-from-shell ts-ls typescript-mode lsp-mode visual-fill-column visual-fill visual-fill-mode org-bullets emojify magit counsel-projectile projectile which-key rainbow-delimiters ivy use-package))
  '(treemacs-project-follow-mode t))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.

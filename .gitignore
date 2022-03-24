@@ -1,3 +1,4 @@
 .history
 !.emacs.d/init.el
+!.emacs.d/config/*
 .emacs.d/*
