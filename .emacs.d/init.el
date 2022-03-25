@@ -2,8 +2,8 @@
 ;; VARIABLE DECLARATION
 ;; --------------------------
 
-(defvar jd/default-font-size 130)
-(defvar jd/default-variable-font-size 160)
+(defvar jd/default-font-size 180)
+(defvar jd/default-variable-font-size 210)
 
 
 ;; --------------------------
@@ -73,6 +73,9 @@
 ;; trying to disable the flickering
 
 (add-to-list 'default-frame-alist '(inhibit-double-buffering . t))
+
+(add-hook 'after-init-hook
+          (lambda () (run-with-timer 5 nil #'set-cursor-color "SystemRedColor")))
 
 
 ;; i like to start my emacs with a view of my todos, org-agenda
@@ -216,11 +219,9 @@
 ;; THEME CONFIG
 ;; --------------------------
 
-(use-package zenburn-theme
+(use-package monokai-theme
   :config
-  (setq zenburn-override-colors-alist
-	'(("zenburn-bg" . "#000000")))
-  (load-theme 'zenburn t))
+  (load-theme 'monokai t))
 
 ;; --------------------------
 ;; SWIPER CONFIG
@@ -753,13 +754,13 @@
 ;; HASKELL CONFIG
 ;; --------------------------
 
-(use-package lsp-haskell)
+;; (use-package lsp-haskell)
 
-(require 'lsp)
-(require 'lsp-haskell)
-;; Hooks so haskell and literate haskell major modes trigger LSP setup
-(add-hook 'haskell-mode-hook #'lsp)
-(add-hook 'haskell-literate-mode-hook #'lsp)
+;; (require 'lsp)
+;; (require 'lsp-haskell)
+;; ;; Hooks so haskell and literate haskell major modes trigger LSP setup
+;; (add-hook 'haskell-mode-hook #'lsp)
+;; (add-hook 'haskell-literate-mode-hook #'lsp)
 
 ;; --------------------------
 ;; PROGRAMMING CONFIG
@@ -892,7 +893,8 @@
 
 
 (use-package all-the-icons-dired
-  :hook (dired-mode . all-the-icons-dired-mode))
+  :hook (dired-mode . all-the-icons-dired-mode)
+  :init (setq all-the-icons-dired-monochrome nil))
 
 
 (use-package dired-open
