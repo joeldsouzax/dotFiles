@@ -2,9 +2,8 @@
 ;; VARIABLE DECLARATION
 ;; --------------------------
 
-(defvar jd/default-font-size 180)
-(defvar jd/default-variable-font-size 210)
-
+(defvar jd/default-font-size 160)
+(defvar jd/default-variable-font-size 190)
 
 ;; --------------------------
 ;; USER DECLARATION
@@ -59,6 +58,28 @@
 ;; --------------------------
 
 
+(setq-default
+ delete-by-moving-to-trash t                      ; Delete files to trash
+ window-combination-resize t                      ; take new window space from all other windows (not just current)
+ x-stretch-cursor t)                              ; Stretch cursor to the glyph width
+
+
+(setq undo-limit 80000000                         ; Raise undo-limit to 80Mb
+      evil-want-fine-undo t                       ; By default while in insert all changes are one big blob. Be more granular
+      auto-save-default t                         ; Nobody likes to loose work, I certainly don't
+      truncate-string-ellipsis "…"                ; Unicode ellispis are nicer than "...", and also save /precious/ space
+      password-cache-expiry nil                   ; I can trust my computers ... can't I?
+      ;; scroll-preserve-screen-position 'always     ; Don't have `point' jump around
+      scroll-margin 2)                            ; It's nice to maintain a little margin
+
+
+(unless (string-match-p "^Power N/A" (battery))   ; On laptops...
+  (display-battery-mode 1))                       ; it's nice to know how much power you have
+
+(global-subword-mode 1)                           ; Iterate through CamelCase words
+
+
+
 (setq inhibit-startup-message t) ;; remove the default emacs startup message
 (scroll-bar-mode -1)             ;; disablE visible scrollbar
 (tool-bar-mode -1)               ;; disable the toolbar
@@ -69,6 +90,24 @@
 (global-hl-line-mode +1)
 (save-place-mode t)
 (global-auto-revert-mode t)
+
+
+;; more useful frame title, that show either a file or a
+;; buffer name (if the buffer isn't visiting a file)
+(setq frame-title-format
+      '("Emacs - " (:eval (if (buffer-file-name)
+                              (abbreviate-file-name (buffer-file-name))
+                            "%b"))))
+
+;; smooth scrolling
+
+(setq mouse-wheel-scroll-amount '(1 ((shift) . 1))) ;; one line at a time
+(setq mouse-wheel-follow-mouse 't) ;; scroll window under mouse
+(setq scroll-margin 4)
+(setq scroll-step 1)
+(setq scroll-conservatively 10000)
+
+
 
 ;; trying to disable the flickering
 
@@ -138,16 +177,16 @@
 ;; GARBAGE COLLECTION CONFIG
 ;; --------------------------
 
-(setq gc-cons-threshold 10000000)
-
-;; restore after startup
-
-(add-hook 'after-init-hook
-	  (lambda ()
-	    (setq gc-cons-threshold 10000000)
-	    (message "gc-cons-threshold restored to %S"
-		     gc-cons-threshold)))
-
+;; Setup and use gcmh-mode for improved garbage collection.
+(use-package gcmh
+  :demand
+  :hook
+  (focus-out-hook . gcmh-idle-garbage-collect)
+  :custom
+  (gcmh-idle-delay 10)
+  (gcmh-high-cons-threshold 104857600)
+  :config
+  (gcmh-mode +1))
 
 ;; --------------------------
 ;; BEACON MODE CONFIG
@@ -164,7 +203,9 @@
 ;; ALL-ICONS CONFIG
 ;; ----------------------
 
-(use-package all-the-icons)
+(use-package all-the-icons
+  :if (display-graphic-p))
+
 
 ;; --------------------------
 ;; MODELINE CONFIG
@@ -180,8 +221,10 @@
 (setq doom-modeline-lsp t)
 (setq doom-modeline-project-detection 'project)
 
+(display-time-mode 1)
+
 ;; --------------------------
-;; FULL-SCREEN CONFIG
+;; Full-Screen Config
 ;; --------------------------
 
 (add-to-list 'default-frame-alist '(fullscreen . maximized))                      ;; default window of emacs would be fullscreen
@@ -913,6 +956,15 @@
 (global-set-key (kbd "C-c y d") 'yarn-add-dev)
 
 
+;; --------------------------
+;; WAKA-TIME CONFIG
+;; --------------------------
+
+(use-package wakatime-mode
+  :ensure t)
+
+(global-wakatime-mode)
+
 ;; ------------------------------------------------------------------------------;;
 ;; AUTO CONFIG + AUTO GENERATED                                                  ;;
 ;; ------------------------------------------------------------------------------;;
@@ -927,16 +979,16 @@
  '(org-ellipsis "  ▼")
  '(org-hide-emphasis-markers t)
  '(package-selected-packages
-   '(haskell-mode auctex ob-typescript no-littering org-roam prettier-js add-node-modules-path rainbow-mode smartparens dap-chrome dap-chrome-setup benchmark-init tide beacon powerline all-the-icons-dired treemacs-magit treemacs-icons-dired treemacs-projectile lsp-ivy lsp-treemacs doom-modeline cyberpunk-theme color-theme-sanityinc-tomorrow ir-black-theme gruber-darker-theme seti-theme seti monokai-theme zenburn-theme exec-path-from-shell ts-ls typescript-mode lsp-mode visual-fill-column visual-fill visual-fill-mode org-bullets emojify magit counsel-projectile projectile which-key rainbow-delimiters ivy use-package))
+   '(undo-tree haskell-mode auctex ob-typescript no-littering org-roam prettier-js add-node-modules-path rainbow-mode smartparens dap-chrome dap-chrome-setup benchmark-init tide beacon powerline all-the-icons-dired treemacs-magit treemacs-icons-dired treemacs-projectile lsp-ivy lsp-treemacs doom-modeline cyberpunk-theme color-theme-sanityinc-tomorrow ir-black-theme gruber-darker-theme seti-theme seti monokai-theme zenburn-theme exec-path-from-shell ts-ls typescript-mode lsp-mode visual-fill-column visual-fill visual-fill-mode org-bullets emojify magit counsel-projectile projectile which-key rainbow-delimiters ivy use-package))
  '(treemacs-project-follow-mode t))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(company-scrollbar-bg ((t (:background "#199919991999"))) t)
- '(company-scrollbar-fg ((t (:background "#0ccc0ccc0ccc"))) t)
- '(company-tooltip ((t (:inherit default :background "#051e051e051e"))))
+ '(company-scrollbar-bg ((t (:background "#422243d439a8"))) t)
+ '(company-scrollbar-fg ((t (:background "#34a435fe2de5"))) t)
+ '(company-tooltip ((t (:inherit default :background "#2c8c2db026d6"))))
  '(company-tooltip-common ((t (:inherit front-lock-constant-face))))
  '(company-tooltip-scrollbar-thumb ((t (:background "#0ccc0ccc0ccc"))))
  '(company-tooltip-scrollbar-track ((t (:background "#199919991999"))))
