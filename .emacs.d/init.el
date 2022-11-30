@@ -27,24 +27,7 @@
 (setq use-package-always-ensure t)
 (setq use-package-verbose t)
 
-;; --------------------------
-;; LOAD EMACS CONFIG FOLDER SCRIPTS
-;; --------------------------
 
-(defun load-directory (directory)
-  "Load recursively all `.el' files in DIRECTORY"
-  (dolist (element (directory-files-and-attributes directory nil nil nil))
-    (let* ((path (car element))
-	   (fullpath (concat directory "/" path))
-	   (isdir (car (cdr element)))
-	   (ignore-dir (or (string= path ".") (string= path ".."))))
-      (cond
-       ((and (eq isdir t) (not ignore-dir))
-	(load-directory fullpath))
-       ((and (eq isdir nil) (string= (substring path -3) ".el"))
-	(load (file-name-sans-extension fullpath)))))))
-
-(load-directory "~/.emacs.d/config")
 (use-package no-littering)
 
 ;; ----------------------------------------------------------------------------------------------------
@@ -101,7 +84,7 @@
 ;; more useful frame title, that show either a file or a
 ;; buffer name (if the buffer isn't visiting a file)
 (setq frame-title-format
-      '("Emacs - " (:eval (if (buffer-file-name)
+      '("Joel - " (:eval (if (buffer-file-name)
                               (abbreviate-file-name (buffer-file-name))
                             "%b"))))
 
@@ -173,6 +156,10 @@
   :config
   (gcmh-mode +1))
 
+
+(use-package all-the-icons
+  :if (display-graphic-p))
+
 ;; --------------------------
 ;; BEACON MODE CONFIG
 ;; ----------------------
@@ -183,14 +170,6 @@
   :config
   (beacon-mode 1)
   (setq beacon-color "#f222ff"))
-
-;; --------------------------
-;; ALL-ICONS CONFIG
-;; ----------------------
-
-(use-package all-the-icons
-  :if (display-graphic-p))
-
 
 ;; --------------------------
 ;; MODELINE CONFIG
@@ -324,8 +303,8 @@
   :bind-keymap
   ("C-c p" . projectile-command-map)
   :init
-  (when (file-directory-p "~/dev/code")
-    (setq projectile-project-search-path '("~/dev/code")))
+  (when (file-directory-p "~/Code")
+    (setq projectile-project-search-path '("~/Code")))
   (setq projectile-switch-project-action #'projectile-dired))
 
 ;; --------------------------
@@ -361,7 +340,6 @@
 ;; --------------------------
 ;; ORG-MODE CONFIG
 ;; --------------------------
-
 
 (defun jd/org-mode-setup ()
   (org-indent-mode)
@@ -402,8 +380,8 @@
 
   ;; config for agenda files
   (setq org-agenda-files
-	'("~/dev/src/github.com/organize/tasks.org"
-	  "~/dev/src/github.com/organize/habits.org"))
+	'("~/Org/tasks.org"
+	  "~/Org/habits.org"))
   
   (setq org-ellipsis "  ▼"
 	org-hide-emphasis-markers t)
@@ -477,21 +455,21 @@
 		   (org-agenda-files org-agenda-fiels)))))))
   (setq org-capture-templates
 	`(("t" "Tasks / Projects")
-	  ("tt" "Task" entry (file+olp "~/dev/src/github.com/organize/tasks.org" "Backlog")
+	  ("tt" "Task" entry (file+olp "~/Org/tasks.org" "Backlog")
 	   "* TODO %?\n %U\n %a\n %i" :empty-lines 1)
 	  ("j" "Journal Entries")
 	  ("jj" "Journal" entry
-	   (file+olp+datetree "~/dev/src/github.com/organize/journal.org")
+	   (file+olp+datetree "~/Org/journal.org")
 	   "\n* %<%I:%M %p> - Journal :journal:\n\n%?\n\n"
 	   :clock-in :clock-resume
 	   :empty-lines 1)
 	  ("jm" "Meeting" entry
-	   (file+olp+datetree "~/dev/src/github.com/organize/journal.org")
+	   (file+olp+datetree "~/Org/journal.org")
 	   "* %<%I:%M %p> - %a :meetings:\n\n%?\n\n"
 	   :clock-in :clock-resume
 	   :empty-lines 1)
 	  ("w" "Workflows")
-	  ("we" "Checking Email" entry (file+olp+datetree "~/dev/src/github.com/organize/journal.org")
+	  ("we" "Checking Email" entry (file+olp+datetree "~/Org/journal.org")
 	   "* Checking Email :email:\n\n%?" :clock-in :clock-resume :empty-lines 1))))
   
 	    
@@ -550,7 +528,7 @@
 						       :inherit 'fixed-pitch)
 				   (set-face-attribute 'line-number-current-line nil
 						       :inherit 'fixed-pitch)
-				   (set-face-attribute (car face) nil :font "Cantarell" :weight 'regular :height (cdr face))))
+				   (set-face-attribute (car face) nil :font "Helvetica Neue" :weight 'regular :height (cdr face))))
 
 
 ;; replace hyphen - with some thing better
@@ -581,21 +559,6 @@
     ("+" (:strike-through t))))
 
 
-
-
-;; --------------------------
-;; ORG LATEX CONFIG
-;; --------------------------
-
-(use-package auctex
-  :after org-mode
-  :config
-  (setq TeX-auto-save t)
-  (setq TeX-parse-self t)
-  (setq-default TeX-master nil))
-
-
-
 ;; --------------------------
 ;; ORG ROAM CONFIG
 ;; --------------------------
@@ -604,7 +567,7 @@
   :after org
   :init (setq org-roam-v2-ack t)
   :custom
-  (org-roam-directory (file-truename "~/dev/src/github.com/notes"))
+  (org-roam-directory (file-truename "~/Org/notes"))
   :config
   (org-roam-setup)
   :bind (("C-c n f" . org-roam-node-find)
@@ -649,46 +612,6 @@
 
 
 ;; --------------------------
-;; ORG-BABEL CONFIG
-;; --------------------------
-
-
-;; setting up ditaa
-(setq org-ditaa-jar-path "~/.emacs.d/ditaa0_9.jar")
-
-
-;; org babel typescript
-
-(use-package ob-typescript
-  :after org)
-
-
-(defun jd/display-inline-images ()
-  (condition-case nil
-      (org-display-inline-images)
-    (error nil)))
-
-(with-eval-after-load 'org
-  (org-babel-do-load-languages
-   'org-babel-load-languages
-   '((emacs-lisp . t)
-     (ditaa . t)
-     (js . t)
-     (C . t)
-     (typescript . t)
-     (org . t)
-     (css . t)))
-  (push '("conf-unix" . conf-unix) org-src-lang-modes)
-  (add-hook 'org-babel-after-execute-hook 'jd/display-inline-images 'append)
-  (setq org-edit-src-content-indentation 0
-	org-src-tab-acts-natively t
-	org-src-preserve-indentation t)
-  (setq org-babel-results-keyword "results"))
-
-
-
-
-;; --------------------------
 ;; ORG CODE TEMPLATE  CONFIG
 ;; --------------------------
 
@@ -697,24 +620,7 @@
   (require 'org-tempo)
   (add-to-list 'org-structure-template-alist '("sh" . "src shell"))
   (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
-  (add-to-list 'org-structure-template-alist '("cpp" . "src C++"))
-  (add-to-list 'org-structure-template-alist '("css" . "src css"))
-  (add-to-list 'org-structure-template-alist '("ts" . "src typescript"))
-  (add-to-list 'org-structure-template-alist '("js" . "src js")))
-
-;; --------------------------
-;; ORG AUTO TANGLE CONFIG
-;; --------------------------
-;; Automatically tangle emacs.org config file when we save it.
-
-(defun jd/org-babel-tangle-config ()
-  (when (string-equal (file-name-directory (buffer-file-name))
-		      (expand-file-name user-emacs-directory))
-    ;; dynamic scoping to the rescue
-    (let ((org-confirm-babel-evaluate nil))
-      (org-babel-tangle))))
-
-(add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'jd/org-babel-tangle-config)))
+  (add-to-list 'org-structure-template-alist '("cpp" . "src C++")))
 
 
 ;; --------------------------
@@ -728,13 +634,27 @@
   (lsp-headerline-breadcrumb-mode))
 
 
+
+
+;; ----------------------------------------------------------------------------------------------------
+;; elixir lsp mode extra config
+;; ----------------------------------------------------------------------------------------------------
+
+(defvar lsp-elixir--config-options (make-hash-table))
+(add-hook 'lsp-after-initialize-hook
+	  (lambda ()
+	    (lsp--set-configuration `(:elixirLS, lsp-elixir--config-options))))
+
+
+
 (use-package lsp-mode
   :commands (lsp lsp-deferred)
-  :hook (lsp-mode . jd/lsp-mode-setup)
+  :hook
+  (lsp-mode . jd/lsp-mode-setup)
+  (elixir-mode . lsp)
   :init
   (setq lsp-keymap-prefix "C-c l")
   (setq lsp-log-io nil)
-  (setq lsp-restart 'auto-restart)
   :config
   (lsp-enable-which-key-integration t))
 
@@ -751,106 +671,11 @@
   :after lsp)
 
 
-;; --------------------------
-;; TYPESCRIPT CONFIG
-;; --------------------------
-
-(use-package typescript-mode
-  :mode "\\.\\(ts\\|js\\)\\'"
-  :init
-  (define-derived-mode typescript-tsx-mode typescript-mode "tsx")
-  :hook (typescript-mode . lsp-deferred)
-  :config
-  (setq typescript-indent-level 2)
-  (add-hook 'typescript-mode #'subword-mode)
-  (add-to-list 'auto-mode-alist '("\\.tsx?\\'" . typescript-tsx-mode)))
-
-(use-package tree-sitter
-  :ensure t
-  :hook ((typescript-mode . tree-sitter-hl-mode)
-	 (typescript-tsx-mode . tree-sitter-hl-mode)))
-
-(use-package tree-sitter-langs
-  :ensure t
-  :after tree-sitter
-  :config
-  (tree-sitter-require 'tsx)
-  (add-to-list 'tree-sitter-major-mode-language-alist '(typescript-tsx-mode . tsx)))
-
-
-;; --------------------------
-;; HASKELL CONFIG
-;; --------------------------
-
-;; (use-package lsp-haskell)
-
-;; (require 'lsp)
-;; (require 'lsp-haskell)
-;; ;; Hooks so haskell and literate haskell major modes trigger LSP setup
-;; (add-hook 'haskell-mode-hook #'lsp)
-;; (add-hook 'haskell-literate-mode-hook #'lsp)
-
-;; --------------------------
-;; PROGRAMMING CONFIG
-;; --------------------------
-
-(use-package smartparens
-  :diminish smartparens-mode ;; Do not show in modeline
-  :init
-  (require 'smartparens-config)
-  :config
-  (smartparens-global-mode t) ;; These options can be t or nil.
-  (show-smartparens-global-mode t)
-  (setq sp-show-pair-from-inside t)
-  :custom-face
-  (sp-show-pair-match-face ((t (:foreground "White"))))) ;; Could also have :background "Grey" for example.
-
-
 
 (use-package rainbow-mode
   :after prog-mode
   :config
   (setq rainbow-x-colors nil))
-
-
-(add-hook 'prog-mode 'electric-pair-mode)
-
-
-;; --------------------------
-;; LOCAL NODE-MODULES CONFIG
-;; --------------------------
-
-
-(use-package add-node-modules-path
-  :defer t
-  :hook (((typescript-mode json-mode js2-mode web-mode) . add-node-modules-path)))
-
-
-;; --------------------------
-;; PRETTIER CONFIG
-;; --------------------------
-
-(defun jd/use-prettier-if-config-exists-in-project-root ()
-  (let* ((package-root (locate-dominating-file
-                        (or (buffer-file-name) default-directory)
-                        "package.json"))
-         (package-file (and package-root (expand-file-name "package.json" package-root)))
-         (grep-prettierrc (concat "grep prettier" package-file))
-         ;; ↓ this needs to be fixed
-         (prettierrc-embedded (not (string= "" (shell-command-to-string grep-prettierrc))))
-         ;; ↑ this needs to be fixed
-         (prettierrc (and package-root (file-exists-p (expand-file-name ".prettierrc" package-root))))
-         (prettierrc-json (and package-root (file-exists-p (expand-file-name ".prettierrc.json" package-root))))
-         (prettierrc-js (and package-root (file-exists-p (expand-file-name ".prettierrc.js" package-root))))
-         (prettierrc-config-js (and package-root (file-exists-p (expand-file-name ".prettierrc.config.js" package-root))))
-         (prettier-config-p (not (eq nil (or prettierrc-embedded prettierrc prettierrc-json prettierrc-js prettierrc-config-js)))))
-    (when prettier-config-p (prettier-js-mode))))
-
-
-(use-package prettier-js
-  :defer t
-  :diminish prettier-js-mode
-  :hook (((typescript-mode json-mode ) . jd/use-prettier-if-config-exists-in-project-root)))
 
 
 ;; --------------------------
@@ -895,16 +720,6 @@
 
 
 ;; --------------------------
-;; SHELL ENVIRONENT CONFIG
-;; --------------------------
-
-(use-package exec-path-from-shell
-  :ensure t
-  :config
-  (exec-path-from-shell-initialize))
-
-
-;; --------------------------
 ;; DIRED CONFIG
 ;; --------------------------
 
@@ -932,23 +747,18 @@
 			       ("mkv" . "mpv"))))
 
 
-;; --------------------------
-;; YARN.el CONFIG
-;; --------------------------
-
-(global-set-key (kbd "C-c y i") 'yarn-init)
-(global-set-key (kbd "C-c y a") 'yarn-add)
-(global-set-key (kbd "C-c y d") 'yarn-add-dev)
-
 
 ;; --------------------------
-;; WAKA-TIME CONFIG
+;; SHELL ENVIRONENT CONFIG
 ;; --------------------------
 
-(use-package wakatime-mode
-  :ensure t)
+(use-package exec-path-from-shell
+  :ensure t
+  :config
+  (exec-path-from-shell-initialize))
 
-(global-wakatime-mode)
+
+
 
 ;; ------------------------------------------------------------------------------;;
 ;; AUTO CONFIG + AUTO GENERATED                                                  ;;
@@ -960,23 +770,23 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(custom-safe-themes
-   '("b77a00d5be78f21e46c80ce450e5821bdc4368abf4ffe2b77c5a66de1b648f10" default))
+   '("b77a00d5be78f21e46c80ce450e5821bdc4368abf4ffe2b77c5a66de1b648f10" default))p
  '(org-ellipsis "  ▼")
  '(org-hide-emphasis-markers t)
  '(package-selected-packages
-   '(undo-tree haskell-mode auctex ob-typescript no-littering org-roam prettier-js add-node-modules-path rainbow-mode smartparens dap-chrome dap-chrome-setup benchmark-init tide beacon powerline all-the-icons-dired treemacs-magit treemacs-icons-dired treemacs-projectile lsp-ivy lsp-treemacs doom-modeline cyberpunk-theme color-theme-sanityinc-tomorrow ir-black-theme gruber-darker-theme seti-theme seti monokai-theme zenburn-theme exec-path-from-shell ts-ls typescript-mode lsp-mode visual-fill-column visual-fill visual-fill-mode org-bullets emojify magit counsel-projectile projectile which-key rainbow-delimiters ivy use-package))
+   '(elixir-mode undo-tree no-littering org-roam rainbow-mode benchmark-init tide beacon powerline all-the-icons-dired treemacs-magit treemacs-icons-dired treemacs-projectile lsp-ivy lsp-treemacs doom-modeline monokai-theme exec-path-from-shell lsp-mode visual-fill-column visual-fill visual-fill-mode org-bullets emojify magit counsel-projectile projectile which-key rainbow-delimiters ivy use-package))
  '(treemacs-project-follow-mode t))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(company-scrollbar-bg ((t (:background "#422243d439a8"))) t)
- '(company-scrollbar-fg ((t (:background "#34a435fe2de5"))) t)
+ '(company-scrollbar-bg ((t (:background "#422243d439a8"))))
+ '(company-scrollbar-fg ((t (:background "#34a435fe2de5"))))
  '(company-tooltip ((t (:inherit default :background "#2c8c2db026d6"))))
  '(company-tooltip-common ((t (:inherit front-lock-constant-face))))
- '(company-tooltip-scrollbar-thumb ((t (:background "#0ccc0ccc0ccc"))))
- '(company-tooltip-scrollbar-track ((t (:background "#199919991999"))))
+ '(company-tooltip-scrollbar-thumb ((t (:background "#34a435fe2de5"))))
+ '(company-tooltip-scrollbar-track ((t (:background "#422243d439a8"))))
  '(company-tooltip-selection ((t (:inherit font-lock-function-name-face))))
  '(org-ellipsis ((t (:foreground "DeepPink3" :underline nil))))
  '(sp-show-pair-match-face ((t (:foreground "White")))))
