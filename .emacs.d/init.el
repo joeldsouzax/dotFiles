@@ -45,11 +45,6 @@
 	(load (file-name-sans-extension fullpath)))))))
 
 (load-directory "~/.emacs.d/config")
-
-;; --------------------------
-;; NO LITTERING
-;; --------------------------
-
 (use-package no-littering)
 
 ;; ----------------------------------------------------------------------------------------------------
@@ -64,9 +59,9 @@
 (set-face-attribute 'variable-pitch nil :font "Helvetica Neue" :height jd/default-variable-font-size :weight 'regular)
 
 
-;; --------------------------
-;; BASIC CONFIG
-;; --------------------------
+;; ----------------------------------------------------------------------------------------------------
+;; Basic emacs configuration
+;; ----------------------------------------------------------------------------------------------------
 
 
 (setq-default
