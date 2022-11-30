@@ -1,18 +1,31 @@
-;; --------------------------
-;; VARIABLE DECLARATION
-;; --------------------------
-
-(defvar jd/default-font-size 160)
-(defvar jd/default-variable-font-size 190)
-
-;; --------------------------
-;; USER DECLARATION
-;; --------------------------
+;; ----------------------------------------------------------------------------------------------------
+;; User Information Declaration
+;; ----------------------------------------------------------------------------------------------------
 
 (setq user-full-name "Joel D'Souza")
 (setq user-mail-address "joeldsouzax@gmail.com")
 
 
+;; ----------------------------------------------------------------------------------------------------
+;; Package repository configuration
+;; Package manager configuration
+;; ----------------------------------------------------------------------------------------------------
+
+
+(setq package-archives '(("melpa" . "https://melpa.org/packages/")
+			 ("org" . "https://orgmode.org/elpa/")
+			 ("elpa" . "https://elpa.gnu.org/packages/")))
+(package-initialize)
+(unless package-archive-contents
+  (package-refresh-contents))
+
+
+(unless (package-installed-p 'use-package)
+  (package-install 'use-package))
+
+(require 'use-package)
+(setq use-package-always-ensure t)
+(setq use-package-verbose t)
 
 ;; --------------------------
 ;; LOAD EMACS CONFIG FOLDER SCRIPTS
@@ -39,18 +52,16 @@
 
 (use-package no-littering)
 
-;; --------------------------
-;; FONT Definitions
-;; --------------------------
+;; ----------------------------------------------------------------------------------------------------
+;; Font Decleration and Definition
+;; ----------------------------------------------------------------------------------------------------
 
+(defvar jd/default-font-size 160)
+(defvar jd/default-variable-font-size 190)
 
 (set-face-attribute 'default nil :font "Menlo" :height jd/default-font-size)
-
-;;fixed pitch face
 (set-face-attribute 'fixed-pitch nil :font "Menlo" :height jd/default-font-size)
-
-;; set the variable-pitch-face
-(set-face-attribute 'variable-pitch nil :font "Cantarell" :height jd/default-variable-font-size :weight 'regular)
+(set-face-attribute 'variable-pitch nil :font "Helvetica Neue" :height jd/default-variable-font-size :weight 'regular)
 
 
 ;; --------------------------
@@ -136,27 +147,6 @@
     kept-new-versions 20   ; how many of the newest versions to keep
     kept-old-versions 5    ; and how many of the old
     )
-
-;; --------------------------
-;; PACKAGE CONFIG
-;; --------------------------
-
-(require 'package)
-(setq package-archives '(("melpa" . "https://melpa.org/packages/")
-			 ("org" . "https://orgmode.org/elpa/")
-			 ("elpa" . "https://elpa.gnu.org/packages/")))
-(package-initialize)
-(unless package-archive-contents
-  (package-refresh-contents))
-
-
-(unless (package-installed-p 'use-package)
-  (package-install 'use-package))                                                   ;; Initialize use-package on non linux platforms.
-
-(require 'use-package)
-(setq use-package-always-ensure t)
-(setq use-package-verbose t)
-
 
 
 
