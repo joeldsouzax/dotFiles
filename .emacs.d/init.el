@@ -620,6 +620,7 @@
   (require 'org-tempo)
   (add-to-list 'org-structure-template-alist '("sh" . "src shell"))
   (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
+  (add-to-list 'org-structure-template-alist '("ex" . "src elixir"))
   (add-to-list 'org-structure-template-alist '("cpp" . "src C++")))
 
 
@@ -640,21 +641,30 @@
 ;; elixir lsp mode extra config
 ;; ----------------------------------------------------------------------------------------------------
 
-(defvar lsp-elixir--config-options (make-hash-table))
-(add-hook 'lsp-after-initialize-hook
-	  (lambda ()
-	    (lsp--set-configuration `(:elixirLS, lsp-elixir--config-options))))
 
+(use-package elixir-mode
+  :hook (elixir-mode . lsp-deferred))
+
+(use-package eglot
+  :commands (eglot eglot-ensures)
+  :hook
+  (elixir-mode . eglot-ensure)
+  (before-save . eglot-format-buffer))
+
+(use-package yasnippet
+  :hook (elixir-mode . yas-minor-mode)
+  :config
+  (yas-snippet-dirs '("~/.emacs.d/snippets")))
 
 
 (use-package lsp-mode
   :commands (lsp lsp-deferred)
   :hook
   (lsp-mode . jd/lsp-mode-setup)
-  (elixir-mode . lsp)
   :init
   (setq lsp-keymap-prefix "C-c l")
   (setq lsp-log-io nil)
+  (add-to-list 'exec-path "~/Code/elixir/elixir-ls-1.14-25.1")
   :config
   (lsp-enable-which-key-integration t))
 
@@ -678,6 +688,7 @@
   (setq rainbow-x-colors nil))
 
 
+
 ;; --------------------------
 ;; Company MODE CONFIG
 ;; --------------------------
@@ -691,6 +702,7 @@
 	("<tab>" . company-indent-or-complete-common))
   :custom
   (company-minimum-prefix-length 1)
+  (company-tooltip-align-annotations t)
   (company-idle-delay 0.0))
 
 
@@ -702,7 +714,7 @@
    `(company-scrollbar-bg ((t (:background ,(color-lighten-name bg 10)))))
    `(company-scrollbar-fg ((t (:background ,(color-lighten-name bg 5)))))
    `(company-tooltip-selection ((t (:inherit font-lock-function-name-face))))
-   `(company-tooltip-common ((t (:inherit front-lock-constant-face))))))
+   `(company-tooltip-common ((t (:inherit font-lock-constant-face))))))
 
 
 ;; --------------------------
@@ -758,8 +770,6 @@
   (exec-path-from-shell-initialize))
 
 
-
-
 ;; ------------------------------------------------------------------------------;;
 ;; AUTO CONFIG + AUTO GENERATED                                                  ;;
 ;; ------------------------------------------------------------------------------;;
@@ -770,11 +780,11 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(custom-safe-themes
-   '("b77a00d5be78f21e46c80ce450e5821bdc4368abf4ffe2b77c5a66de1b648f10" default))p
+   '("b77a00d5be78f21e46c80ce450e5821bdc4368abf4ffe2b77c5a66de1b648f10" default))
  '(org-ellipsis "  ▼")
  '(org-hide-emphasis-markers t)
  '(package-selected-packages
-   '(elixir-mode undo-tree no-littering org-roam rainbow-mode benchmark-init tide beacon powerline all-the-icons-dired treemacs-magit treemacs-icons-dired treemacs-projectile lsp-ivy lsp-treemacs doom-modeline monokai-theme exec-path-from-shell lsp-mode visual-fill-column visual-fill visual-fill-mode org-bullets emojify magit counsel-projectile projectile which-key rainbow-delimiters ivy use-package))
+   '(undo-tree no-littering org-roam rainbow-mode benchmark-init tide beacon powerline all-the-icons-dired treemacs-magit treemacs-icons-dired treemacs-projectile lsp-ivy lsp-treemacs doom-modeline monokai-theme exec-path-from-shell lsp-mode visual-fill-column visual-fill visual-fill-mode org-bullets emojify magit counsel-projectile projectile which-key rainbow-delimiters ivy use-package))
  '(treemacs-project-follow-mode t))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -784,7 +794,7 @@
  '(company-scrollbar-bg ((t (:background "#422243d439a8"))))
  '(company-scrollbar-fg ((t (:background "#34a435fe2de5"))))
  '(company-tooltip ((t (:inherit default :background "#2c8c2db026d6"))))
- '(company-tooltip-common ((t (:inherit front-lock-constant-face))))
+ '(company-tooltip-common ((t (:inherit font-lock-constant-face))))
  '(company-tooltip-scrollbar-thumb ((t (:background "#34a435fe2de5"))))
  '(company-tooltip-scrollbar-track ((t (:background "#422243d439a8"))))
  '(company-tooltip-selection ((t (:inherit font-lock-function-name-face))))
